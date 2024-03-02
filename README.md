@@ -11,7 +11,7 @@ You are going to need [Node.js](https://nodejs.org/en/download/current) (LTS ver
 Instalation for windows:
 
 ```
-git clone
+git clone https://github.com/MuscleMate/BackEnd.git
 cd ./BackEnd
 npm install
 npm run dev
