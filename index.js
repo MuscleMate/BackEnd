@@ -3,6 +3,7 @@ const express = require("express");
 const morgan = require("morgan");
 require("express-async-errors");
 require("dotenv").config();
+const connectDB = require("./database/connect");
 
 // Security imports
 const helmet = require("helmet");
@@ -35,11 +36,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // Routes
-app.use("/api/auth", authRoutes);
-
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Hello World" });
-});
+app.use("/auth", authRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
@@ -47,6 +44,11 @@ app.use(errorHandlerMiddleware);
 
 const start = async () => {
   try {
+    // Connecting to database
+    await connectDB(process.env.MONGODB_URI).then(() =>
+      console.log("Database connected")
+    );
+    // Starting the server
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );
