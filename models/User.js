@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
+const validator = require("validate");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -22,11 +22,46 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Please provide password"],
     minlength: 6,
   },
-  role: {
+  firstName: {
     type: String,
-    enum: ["admin", "user"],
-    default: "user",
+    required: [true, "Please provide first name"],
+    minlength: 3,
+    maxlength: 50,
   },
+  lastName: {
+    type: String,
+    minlength: 3,
+    maxlength: 50,
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  height: {
+    type: Number,
+    min: 1,
+    max: 250,
+  },
+  weight: {
+    type: Number,
+    min: 1,
+    max: 250,
+  },
+  gender: {
+    type: "String",
+    enum: ["male", "female", "other"],
+  },
+  friends: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  workouts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Workout",
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", UserSchema);
