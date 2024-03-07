@@ -1,8 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 
 const notFound = (req, res) => {
-  console.log("Not found middleware");
-  res.status(StatusCodes.NOT_FOUND).send("Route does not exist");
+  res.status(StatusCodes.NOT_FOUND).json({ msg: "Route not found" });
 };
 
 module.exports = notFound;
