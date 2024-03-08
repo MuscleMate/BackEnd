@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const Workout = require("../models/Workout");
+const User = require("../models/User");
 
 const add_workout = async (req, res)=>{
     try{
@@ -18,4 +19,14 @@ const add_workout = async (req, res)=>{
     }
 }
 
-module.exports = { add_workout };
+const get_workout = async (req, res)=>{
+    try{
+        const user = new User(req.body);
+        res.status(StatusCodes.OK).json(user.workouts);
+    }
+    catch(err){
+        res.status(StatusCodes.BAD_REQUEST).json(err);
+    }
+}
+
+module.exports = { add_workout,get_workout};
