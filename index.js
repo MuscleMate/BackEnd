@@ -4,6 +4,7 @@ const morgan = require("morgan");
 require("express-async-errors");
 require("dotenv").config();
 const connectDB = require("./database/connect");
+const cookieParser = require('cookie-parser');
 
 // Security imports
 const helmet = require("helmet");
@@ -34,6 +35,7 @@ app.use(cors());
 app.use(mogoSanitize());
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use("/auth", authRoutes);
