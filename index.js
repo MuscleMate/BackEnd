@@ -13,7 +13,7 @@ const mogoSanitize = require("express-mongo-sanitize");
 
 // Routes imports
 const authRoutes = require("./routes/auth");
-const apiRoutes = require("./routes/api");
+const workoutsRoutes = require("./routes/workouts");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -38,7 +38,7 @@ app.use(express.json());
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/API", apiRoutes);
+app.use("/workouts", workoutsRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
