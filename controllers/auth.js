@@ -2,9 +2,12 @@ const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
 const jwt = require('jsonwebtoken');
 
-
+// cookie lifetime in seconds
 const maxAge = 3*24*60*60;
+
 const createJWT = (id)=>{
+  // i dont know where to put the secret string
+  // so for now i just type literals
   return jwt.sign({ id }, 'secret', {
     expiresIn: maxAge
   });
@@ -26,6 +29,11 @@ const login = async (req, res) => {
   const {email, password} = req.body;
 
   const user = await User.login(email, password);
+  const token = createJWT(user._id);
+  res.cookie('jwt', token,{
+    httpOnly: true,
+    maxAge: maxAge * 1000
+  });
   res.status(StatusCodes.OK).json({user:user._id});
 };
 
