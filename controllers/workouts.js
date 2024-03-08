@@ -1,4 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
+const mongoose = require('mongoose');
 const Workout = require("../models/Workout");
 const User = require("../models/User")
 const add_workout = async (req, res)=>{
@@ -20,14 +21,11 @@ const add_workout = async (req, res)=>{
 
 const get_workout = async (req, res) => {
     try {
-        console.log(req.query.userID);
         const user = await User.findById(req.query.userID);
-        console.log(user);
         if (!user) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
         }
-        console.log(user);
-        res.status(StatusCodes.OK).json(user.weight);
+        res.status(StatusCodes.OK).json(user.workouts);
     } catch (err) {
         res.status(StatusCodes.BAD_REQUEST).json(err);
     }
