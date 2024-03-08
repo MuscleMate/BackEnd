@@ -62,6 +62,12 @@ const UserSchema = new mongoose.Schema({
       ref: "Workout",
     },
   ],
+  tournaments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tournament",
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", UserSchema);
