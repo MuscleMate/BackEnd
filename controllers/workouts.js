@@ -20,21 +20,16 @@ const add_workout = async (req, res)=>{
 
 const get_workout = async (req, res) => {
     try {
-        const userId = req.query.userID;
-        if (!userId) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is required' });
-        }
-
-        const user = await User.findById(userId);
+        console.log(req.query.userID);
+        const user = await User.findById(req.query.userID);
+        console.log(user);
         if (!user) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
         }
-
-        // You may return the entire user object or specific fields as needed
-        res.status(StatusCodes.OK).json({ user });
+        console.log(user);
+        res.status(StatusCodes.OK).json(user.weight);
     } catch (err) {
-        console.error(err);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+        res.status(StatusCodes.BAD_REQUEST).json(err);
     }
 }
 
