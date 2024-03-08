@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 //const validator = require("validate");
 
 const UserSchema = new mongoose.Schema({
+  
   name: {
     type: String,
     required: [true, "Please provide name"],
@@ -64,4 +65,4 @@ const UserSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", UserSchema, 'User');

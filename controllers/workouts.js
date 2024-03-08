@@ -1,5 +1,4 @@
 const { StatusCodes } = require("http-status-codes");
-const mongoose = require('mongoose');
 const Workout = require("../models/Workout");
 const User = require("../models/User")
 const add_workout = async (req, res)=>{
