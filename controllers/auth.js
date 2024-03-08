@@ -37,4 +37,11 @@ const login = async (req, res) => {
   res.status(StatusCodes.OK).json({user:user._id});
 };
 
-module.exports = { register, login };
+const logout = async (req, res) => {
+  res.cookie('jwt', '',{
+    maxAge: 1
+  });
+  res.status(StatusCodes.OK).json({message: 'Logged out'});
+};
+
+module.exports = { register, login, logout };
