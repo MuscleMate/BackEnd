@@ -25,4 +25,22 @@ const add_workout = async (req, res) => {
   }
 };
 
-module.exports = { add_workout };
+const get_workouts = async (req, res) => {
+  const { user: userID } = req.body;
+  try {
+    const user = await User.findById(userID);
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+    }
+    const workouts = await user.populate("workouts");
+    res
+      .status(StatusCodes.OK)
+      .json({ user: userID, reqworkouts: workouts.workouts });
+  } catch (err) {
+    res.status(StatusCodes.BAD_REQUEST).json(err);
+  }
+};
+
+module.exports = { add_workout, get_workouts };
