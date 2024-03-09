@@ -4,6 +4,7 @@ const morgan = require("morgan");
 require("express-async-errors");
 require("dotenv").config();
 const connectDB = require("./database/connect");
+const cookieParser = require("cookie-parser");
 
 // Security imports
 const helmet = require("helmet");
@@ -18,6 +19,7 @@ const workoutsRoutes = require("./routes/workouts");
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
+const { requireAuth } = require("./middleware/auth");
 
 // App
 const app = express();
@@ -35,10 +37,11 @@ app.use(cors());
 app.use(mogoSanitize());
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/workouts", workoutsRoutes);
+app.use("/workouts", requireAuth, workoutsRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
