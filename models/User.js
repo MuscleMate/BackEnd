@@ -3,13 +3,6 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please provide name"],
-    minlength: 3,
-    maxlength: 50,
-  },
-
   email: {
     type: String,
     unique: true,
@@ -82,4 +75,4 @@ UserSchema.methods.comparePasswords = async function (password) {
   return isCorrect;
 };
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", UserSchema, "Users");
