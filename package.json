@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "SET NODE_ENV=development & nodemon index.js",
     "start": "node index.js"
   },
   "keywords": [],

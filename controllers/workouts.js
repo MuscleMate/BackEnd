@@ -37,9 +37,9 @@ const get_workouts = async (req, res) => {
     const workouts = await user.populate("workouts");
     res
       .status(StatusCodes.OK)
-      .json({ user: userID, reqworkouts: workouts.workouts });
+      .json({ user: userID, workouts: workouts.workouts });
   } catch (err) {
-    res.status(StatusCodes.BAD_REQUEST).json(err);
+    res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
   }
 };
 

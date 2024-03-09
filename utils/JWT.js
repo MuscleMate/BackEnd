@@ -20,7 +20,7 @@ const createJWT = (userID) => {
 const attachCookies = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true,
-    maxAge: maxAge,
+    maxAge: maxAge * 1000, // in milliseconds
   });
 };
 

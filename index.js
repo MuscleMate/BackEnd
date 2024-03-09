@@ -2,7 +2,10 @@
 const express = require("express");
 const morgan = require("morgan");
 require("express-async-errors");
-require("dotenv").config();
+require("dotenv").config({
+  path:
+    process.env.NODE_ENV === "development " ? "./.env.development" : "./.env",
+});
 const connectDB = require("./database/connect");
 const cookieParser = require("cookie-parser");
 
@@ -15,6 +18,7 @@ const mogoSanitize = require("express-mongo-sanitize");
 // Routes imports
 const authRoutes = require("./routes/auth");
 const workoutsRoutes = require("./routes/workouts");
+const tournamentRoutes = require("./routes/tournaments");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -42,6 +46,7 @@ app.use(cookieParser());
 // Routes
 app.use("/auth", authRoutes);
 app.use("/workouts", requireAuth, workoutsRoutes);
+app.use("/tournaments", requireAuth, tournamentRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);

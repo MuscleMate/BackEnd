@@ -3,13 +3,6 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please provide name"],
-    minlength: 3,
-    maxlength: 50,
-  },
-
   email: {
     type: String,
     unique: true,
@@ -63,6 +56,12 @@ const UserSchema = new mongoose.Schema({
       ref: "Workout",
     },
   ],
+  tournaments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tournament",
+    },
+  ],
 });
 
 UserSchema.pre("save", async function (next) {
@@ -76,15 +75,4 @@ UserSchema.methods.comparePasswords = async function (password) {
   return isCorrect;
 };
 
-UserSchema.pre("save", async function (next) {
-  const salt = await bcrypt.genSalt();
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-UserSchema.methods.comparePasswords = async function (password) {
-  const isCorrect = await bcrypt.compare(password, this.password);
-  return isCorrect;
-};
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", UserSchema, "Users");
