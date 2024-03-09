@@ -15,4 +15,4 @@ const ExerciseSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Exercise", ExerciseSchema);
+module.exports = mongoose.model("Exercise", ExerciseSchema, "Exercise");

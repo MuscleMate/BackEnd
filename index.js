@@ -13,6 +13,7 @@ const mogoSanitize = require("express-mongo-sanitize");
 
 // Routes imports
 const authRoutes = require("./routes/auth");
+const tournamentRoutes = require("./routes/tournaments");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -37,7 +38,7 @@ app.use(express.json());
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/tournaments", authRoutes)
+app.use("/tournaments", tournamentRoutes)
 
 // Error handling
 app.use(notFoundMiddleware);

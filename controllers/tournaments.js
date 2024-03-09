@@ -1,14 +1,14 @@
 const { StatusCodes } = require("http-status-codes");
-const getTournaments = async (req, res) => {
-    const userId = req.params.userId;
-    // Get the tournaments from the database
-    const tournaments = await Tournament.find({ userid: userId });
+const User = require("../models/user.js");
 
+const getTournaments = async (req, res) => {
     try {
-        // Send the tournaments as a response
-        res.status(StatusCodes.OK).json(tournaments);
+        const user = await User.findById(req.query.userID);
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+        }
+        res.status(StatusCodes.OK).json(user.tournaments);
     } catch (error) {
-        // Handle any errors that occur
         res.status(StatusCodes.BAD_REQUEST).json({ error: 'Failed to retrieve tournaments' });
     }
 };
