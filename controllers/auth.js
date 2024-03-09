@@ -1,47 +1,72 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
-const jwt = require('jsonwebtoken');
+const { createJWT, attachCookies } = require("../utils/JWT");
+const { BadRequestError } = require("../errors");
 
-// cookie lifetime in seconds
-const maxAge = 3*24*60*60;
-
-const createJWT = (id)=>{
-  // i dont know where to put the secret string
-  // so for now i just type literals
-  return jwt.sign({ id }, 'secret', {
-    expiresIn: maxAge
-  });
-};
-
+/** Registers a new user
+ * @url POST /auth/register
+ * @body email, firstName, password
+ * @response user id
+ * @cookies jwt
+ */
 const register = async (req, res) => {
+  const { email, firstName, password } = req.body;
+
+  if (!email || !password || !firstName) {
+    throw new BadRequestError("Please provide email, firstName and password");
+  }
+
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    throw new BadRequestError(`User with email ${email} already exists`);
+  }
 
   const user = await User.create(req.body);
-  const token = createJWT(user._id);
-  res.cookie('jwt', token,{
-    httpOnly: true,
-    maxAge: maxAge * 1000
-  });
 
-  res.status(StatusCodes.OK).json({user: user._id}); 
+  const token = createJWT(user._id);
+  attachCookies(res, token);
+
+  res.status(StatusCodes.CREATED).json({ user: user._id });
 };
 
+/** Logs in a user
+ * @url POST /auth/login
+ * @body email, password
+ * @response user id
+ * @cookies jwt
+ */
 const login = async (req, res) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
-  const user = await User.login(email, password);
+  if (!email || !password) {
+    throw new BadRequestError("Please provide email, firstName and password");
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new BadRequestError(`User with email ${email} does not exists`);
+  }
+
+  const isPasswordCorrect = await user.comparePasswords(password);
+  if (!isPasswordCorrect) {
+    throw new BadRequestError("Invalid credentials");
+  }
+
   const token = createJWT(user._id);
-  res.cookie('jwt', token,{
-    httpOnly: true,
-    maxAge: maxAge * 1000
-  });
-  res.status(StatusCodes.OK).json({user:user._id});
+  attachCookies(res, token);
+
+  res.status(StatusCodes.OK).json({ user: user._id });
 };
 
+/** Logs out a user
+ * @url POST /auth/logout
+ * @response log out message
+ */
 const logout = async (req, res) => {
-  res.cookie('jwt', '',{
-    maxAge: 1
+  res.cookie("jwt", "", {
+    maxAge: 1,
   });
-  res.status(StatusCodes.OK).json({message: 'Logged out'});
+  res.status(StatusCodes.OK).json({ message: "Logged out" });
 };
 
 module.exports = { register, login, logout };
