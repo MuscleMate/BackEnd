@@ -1,21 +1,46 @@
 const { StatusCodes } = require("http-status-codes");
 const Workout = require("../models/Workout");
+const { BadRequestError } = require("../errors");
+const User = require("../models/User");
 
-const add_workout = async (req, res)=>{
-    try{
-        const workout = new Workout(req.body);
-        await workout.validate();
+/** Adds a new workout
+ * @url POST /workouts
+ * @body title, description, date with hour, duration
+ * @response new workout
+ */
+const add_workout = async (req, res) => {
+  try {
+    const workout = new Workout(req.body);
+    await workout.validate();
+    await workout.save();
 
-        // TODO
-        // verify if the user is the same user which sent request
+    await User.findOneAndUpdate(
+      { _id: req.body.user },
+      { $push: { workouts: workout._id } }
+    );
 
-        await workout.save();
+    res.status(StatusCodes.CREATED).json(workout);
+  } catch (err) {
+    throw new BadRequestError(err);
+  }
+};
 
-        res.status(StatusCodes.CREATED).json(workout);
+const get_workouts = async (req, res) => {
+  const { user: userID } = req.body;
+  try {
+    const user = await User.findById(userID);
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
     }
-    catch(err){
-        res.status(StatusCodes.BAD_REQUEST).json(err);
-    }
-}
+    const workouts = await user.populate("workouts");
+    res
+      .status(StatusCodes.OK)
+      .json({ user: userID, reqworkouts: workouts.workouts });
+  } catch (err) {
+    res.status(StatusCodes.BAD_REQUEST).json(err);
+  }
+};
 
-module.exports = { add_workout };
+module.exports = { add_workout, get_workouts };
