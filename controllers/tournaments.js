@@ -8,12 +8,10 @@ const getTournaments = async (req, res) => {
         if (!user) {
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
         }
-        const tournaments = await user.populate("tournaments");
-        res.status(StatusCodes.OK).json({ tournaments: tournaments.tournaments });
-        res.status(StatusCodes.OK).json({});
+        res.status(StatusCodes.OK).json({ tournaments: user.tournaments });
 
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({ error: 'Failed to retrieve tournaments' });
+        res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
     }
 };
 
