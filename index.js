@@ -2,9 +2,11 @@
 const express = require("express");
 const morgan = require("morgan");
 require("express-async-errors");
-require("dotenv").config();
+require("dotenv").config({
+  path:
+    process.env.NODE_ENV === "development " ? "./.env.development" : "./.env",
+});
 const connectDB = require("./database/connect");
-
 // Security imports
 const helmet = require("helmet");
 const cors = require("cors");
@@ -40,7 +42,7 @@ app.use(express.json());
 // Routes
 app.use("/auth", authRoutes);
 app.use("/workouts", workoutsRoutes);
-app.use("/tournaments", tournamentRoutes)
+app.use("/tournaments", tournamentRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
