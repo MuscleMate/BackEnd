@@ -4,12 +4,6 @@ const bcrypt = require('bcrypt');
 const UnauthenticatedError = require('../errors/unauthenticated');
 
 const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please provide name"],
-    minlength: 3,
-    maxlength: 50,
-  },
   email: {
     type: String,
     unique: true,
