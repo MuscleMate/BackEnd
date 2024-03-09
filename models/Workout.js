@@ -32,7 +32,7 @@ const WorkoutSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: [true, "Please provide user"]
+    required: [true, "Please provide user"],
   },
   equipment: [
     {
