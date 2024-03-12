@@ -5,15 +5,27 @@ const Tournament = require("../models/Tournament");
 
 const getTournaments = async (req, res) => {
     try {
-        const user = await User.findById(req.body.user);
+        const user = await User.findById(req.body.user).populate({
+            path: 'tournaments',
+            populate: [
+                {
+                    path: 'admins',
+                    model: 'User'
+                },
+                {
+                    path: 'contestants',
+                    model: 'User'
+                }
+            ]
+        });
 
         if (!user) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            throw new NotFoundError('User not found');
         }
         res.status(StatusCodes.OK).json({ tournaments: user.tournaments });
 
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+        throw new BadRequestError(error.message);
     }
 };
 
