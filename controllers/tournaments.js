@@ -48,6 +48,7 @@ const createTournament = async (req, res) => {
 
 const updateTournament = async (req, res) => {
     const { id } = req.params;
+    let { admins, contestants } = req.body;
 
     if (Object.keys(req.body).length === 1) {
         throw new BadRequestError('Provide data to update');
@@ -63,8 +64,34 @@ const updateTournament = async (req, res) => {
         throw new NotFoundError('User not authorized to update this tournament');
     }
 
+    // add the tournamentID to tournaments array of the admins
+    if (admins?.length) {
+        for (let i = 0; i < admins.length; i++) {
+            const admin = await User.findById(admins[i]);
+            if (!admin) {
+                throw new NotFoundError('Admin you are trying to add does not exist');
+            }
+            if (!admin.tournaments.includes(tournament._id)) {
+                await admin.updateOne({ $push: { tournaments: tournament._id } });
+            }
+        }
+    }
+
+    // add the tournamentID to tournaments array of the contestants
+    if (contestants?.length) {
+        for (let i = 0; i < contestants.length; i++) {
+            const contestant = await User.findById(contestants[i]);
+            if (!contestant) {
+                throw new NotFoundError('Contestant you are trying to add does not exist');
+            }
+            if (!contestant.tournaments.includes(tournament._id)) {
+                await contestant.updateOne({ $push: { tournaments: tournament._id } });
+            }
+        }
+    }
+
     try {
-        await tournament.updateOne(req.body);
+        await tournament.updateOne(req.body)
     } catch (error) {
         throw new BadRequestError(error.message);
     }
