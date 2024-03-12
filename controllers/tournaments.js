@@ -46,7 +46,35 @@ const createTournament = async (req, res) => {
     }
 }
 
+const updateTournament = async (req, res) => {
+    const { id } = req.params;
+
+    if (Object.keys(req.body).length === 1) {
+        throw new BadRequestError('Provide data to update');
+    }
+
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+
+    const user = await User.findById(req.body.user);
+    if (tournament.admins.indexOf(user._id) === -1) {
+        throw new NotFoundError('User not authorized to update this tournament');
+    }
+
+    try {
+        await tournament.updateOne(req.body);
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+
+    res.status(StatusCodes.OK).json({ msg: "Tournament updated" });
+}
+
+
 module.exports = {
     getTournaments,
-    createTournament
+    createTournament,
+    updateTournament
 };
