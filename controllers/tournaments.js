@@ -99,9 +99,107 @@ const updateTournament = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: "Tournament updated" });
 }
 
+const updateTournamentRole = async (req, res) => {
+    const { id } = req.params;
+    const { user, role, userToBeChanged } = req.body;
+
+    if (!user || !role || !userToBeChanged) {
+        throw new BadRequestError('Provide role and userToBeChanged');
+    }
+
+    if (role !== 'admin' && role !== 'contestant') {
+        throw new BadRequestError('Invalid role');
+    }
+
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+
+    const admin = await User.findById(user);
+    if (!admin) {
+        throw new NotFoundError(`No user found with id: ${user}`);
+    }
+    if (tournament.admins.indexOf(admin._id) === -1) {
+        throw new NotFoundError('User not authorized to update this tournament');
+    }
+
+    const userToBeChangedDoc = await User.findOne({ _id: userToBeChanged });
+    if (!userToBeChangedDoc) {
+        throw new NotFoundError(`No user found with id: ${userToBeChanged}`);
+    }
+    if (userToBeChangedDoc.tournaments.indexOf(tournament._id) === -1) {
+        throw new NotFoundError('User is not part of the tournament');
+    }
+    if (role === 'admin') {
+        if (tournament.admins.indexOf(userToBeChangedDoc._id) === -1) {
+            await tournament.updateOne({ $push: { admins: userToBeChangedDoc._id } });
+            await tournament.updateOne({ $pull: { contestants: userToBeChangedDoc._id } });
+        } else {
+            throw new BadRequestError('User is already an admin');
+        }
+    }
+    if (role === 'contestant') {
+        if (tournament.contestants.indexOf(userToBeChangedDoc._id) === -1) {
+            await tournament.updateOne({ $push: { contestants: userToBeChangedDoc._id } });
+            await tournament.updateOne({ $pull: { admins: userToBeChangedDoc._id } });
+        } else {
+            throw new BadRequestError('User is already a contestant');
+        }
+    }
+
+    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+}
+
+const addUsersToTournament = async (req, res) => {
+    const { id } = req.params;
+    const { user, role, userToBeAdded } = req.body;
+
+    if (!user || !role || !userToBeAdded) {
+        throw new BadRequestError('Provide role and userToBeAdded fields');
+    }
+
+    if (role !== 'admin' && role !== 'contestant') {
+        throw new BadRequestError('Invalid role');
+    }
+
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+
+    const admin = await User.findById(user);
+    if (!admin) {
+        throw new NotFoundError(`No user found with id: ${user}`);
+    }
+    if (tournament.admins.indexOf(admin._id) === -1) {
+        throw new NotFoundError('User not authorized to update this tournament');
+    }
+
+    const userTBA = await User.findOne({ _id: userToBeAdded });
+    if (!userTBA) {
+        throw new NotFoundError(`No user found with id: ${userToBeAdded}`);
+    }
+    if (userTBA.tournaments.includes(tournament._id)) {
+        throw new NotFoundError('User is already part of the tournament');
+    }
+    if (role === 'admin') {
+        await tournament.updateOne({ $push: { admins: userTBA._id } });
+        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+    }
+    if (role === 'contestant') {
+        await tournament.updateOne({ $push: { contestants: userTBA._id } });
+        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+    }
+
+    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+}
+
 
 module.exports = {
     getTournaments,
     createTournament,
-    updateTournament
+    updateTournament,
+    updateTournamentRole,
+    addUsersToTournament
 };
