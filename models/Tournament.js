@@ -12,26 +12,31 @@ const TournamentSchema = new mongoose.Schema({
     minlength: 10,
     maxlength: 500,
   },
-  date: {
+  startDate: {
     type: Date,
-    required: [true, "Please provide date"],
+    required: [true, "Please provide start date"],
   },
-  user: {
+  endDate: {
+    type: Date,
+    required: [true, "Please provide end date"],
+  },
+  admins: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-  },
-  players: [
+
+  }],
+  contestants: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
   ],
-  duration: {
-    type: Number,
-    required: [true, "Please provide duration"],
-    min: 1,
-    max: 120,
+  determinant: {
+    type: String,
+    enum: ["time", "rounds"],
+    required: [true, "Please provide determinant"],
   },
-});
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("Tournament", TournamentSchema, "Tournaments");
