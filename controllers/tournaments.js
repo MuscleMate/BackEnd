@@ -3,6 +3,17 @@ const User = require("../models/User");
 const { NotFoundError, BadRequestError } = require("../errors");
 const Tournament = require("../models/Tournament");
 
+const getAllTournaments = async (req, res) => {
+    try {
+        const tournaments = await Tournament.find({}).populate(['admins', 'contestants']);
+
+        res.status(StatusCodes.OK).json({ tournaments: tournaments });
+
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+};
+
 const getTournaments = async (req, res) => {
     try {
         const user = await User.findById(req.body.user).populate({
@@ -201,5 +212,6 @@ module.exports = {
     createTournament,
     updateTournament,
     updateTournamentRole,
-    addUsersToTournament
+    addUsersToTournament,
+    getAllTournaments
 };
