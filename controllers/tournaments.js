@@ -195,11 +195,29 @@ const addUsersToTournament = async (req, res) => {
     res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
 }
 
+const deleteTournament = async(req,res) => {
+    const { id } = req.params;
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+    const user = await User.findById(req.body.user);
+    if (tournament.admins.indexOf(user._id) === -1) {
+        throw new NotFoundError('User not authorized to delete this tournament');
+    }
+    try {
+        await Tournament.drop(req.body);
+        res.status(StatusCodes.OK).json({ tournamentID: tournament._id });
+    } catch(error) {
+        throw new BadRequestError(error.message);
+    }
+}
 
 module.exports = {
     getTournaments,
     createTournament,
     updateTournament,
     updateTournamentRole,
-    addUsersToTournament
+    addUsersToTournament,
+    deleteTournament
 };
