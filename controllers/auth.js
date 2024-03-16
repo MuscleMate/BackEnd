@@ -39,7 +39,7 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new BadRequestError("Please provide email, firstName and password");
+    throw new BadRequestError("Please provide email and password");
   }
 
   const user = await User.findOne({ email });
@@ -69,4 +69,28 @@ const logout = async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "Logged out" });
 };
 
-module.exports = { register, login, logout };
+/** Resets user password
+ * @url POST /auth/reset-password
+ * @body email, new password
+ * @response password change message
+ * @cookies jwt
+ */
+const reset_pass = async (req,res)=>{
+  const { user, password} = req.body;
+
+  if (!password) {
+    throw new BadRequestError("Please provide new password");
+  }
+
+  const userRet = await User.findById(user);
+  if (!userRet){
+    throw new BadRequestError("User not found");
+  }
+
+  userRet.password = password;
+
+  userRet.save();
+  res.status(StatusCodes.OK).json({ message: "Password has been changed" });
+};
+
+module.exports = { register, login, logout, reset_pass };
