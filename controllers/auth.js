@@ -71,11 +71,11 @@ const logout = async (req, res) => {
 
 /** Resets user password
  * @url POST /auth/reset-password
- * @body email, new password
+ * @body new password
  * @response password change message
  * @cookies jwt
  */
-const reset_pass = async (req,res)=>{
+const reset_password = async (req,res)=>{
   const { user, password} = req.body;
 
   if (!password) {
@@ -93,4 +93,4 @@ const reset_pass = async (req,res)=>{
   res.status(StatusCodes.OK).json({ message: "Password has been changed" });
 };
 
-module.exports = { register, login, logout, reset_pass };
+module.exports = { register, login, logout, reset_password };
