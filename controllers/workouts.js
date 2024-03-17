@@ -42,5 +42,38 @@ const get_workouts = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
   }
 };
+const delete_workout = async(req,res) => {
+  const { user: userID } = req.body;
+  const { id } = req.params;
+  try{
+    const user = await User.findById(userID);
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+    }
+    const workout = await Workout.findById(id);
+    if(!workout)
+    {
+      return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Workout not found" });
+    }
+    if (workout.user != userID) 
+    {
+      throw new NotFoundError('User not authorized to delete this workout');
+    }
+    await User.findOneAndUpdate(
+      { _id: req.body.user },
+      { $drop: { workouts: id } }
+    );
+    await Workout.findByIdAndDelete(
+      {_id: id}
+    )
+  }
+  catch(err) {
+    res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
+  }
+}
 
-module.exports = { add_workout, get_workouts };
+module.exports = { add_workout, get_workouts , delete_workout};
