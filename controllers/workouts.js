@@ -65,10 +65,10 @@ const delete_workout = async(req,res) => {
     }
     
     await user.updateOne(
-      { $drop: { workouts: id } }
+      { $pull: { workouts: id } }
     );
     await workout.deleteOne();
-    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+    res.status(StatusCodes.NO_CONTENT).json();
   }
   catch(err) {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
