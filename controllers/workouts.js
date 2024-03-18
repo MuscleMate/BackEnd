@@ -63,13 +63,12 @@ const delete_workout = async(req,res) => {
     {
       throw new NotFoundError('User not authorized to delete this workout');
     }
-    await User.findOneAndUpdate(
-      { _id: req.body.user },
+    
+    await user.updateOne(
       { $drop: { workouts: id } }
     );
-    await Workout.findByIdAndDelete(
-      {_id: id}
-    )
+    await workout.deleteOne();
+    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
   }
   catch(err) {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
