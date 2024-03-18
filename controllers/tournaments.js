@@ -32,10 +32,15 @@ const getTournaments = async (req, res) => {
 const createTournament = async (req, res) => {
     try {
         const user = await User.findById(req.body.user);
+        
         if (!user) {
             throw new NotFoundError('User not found');
         }
-        req.body.admins = [...(req.body.admins.filter((id) => id != user._id)), user._id]
+        
+        if (req.body.admins.indexOf(user._id) === -1) {
+            throw new BadRequestError('Admins array should contain the user creating the tournament');
+        }
+
         const tournament = await Tournament.create(req.body)
 
         await user.updateOne({ $push: { tournaments: tournament._id } });
