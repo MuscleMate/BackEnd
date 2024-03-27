@@ -42,5 +42,33 @@ const get_workouts = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
   }
 };
+const get_singleworkout = async(req,res)=> {
+  const { id } = req.params;
+  const { user: userID } = req.body;
+  const user = await User.findById(userID);
+  if (!user) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "User not found" });
+  }
+  const workout = await Workout.findById(id);
+  console.log(workout);
+  if(!workout)
+  {
+    throw new NotFoundError('Workout not found');
+  }
+  if(workout.company.indexOf(userID) === -1||workout.access.indexOf(userID)===-1)
+  {
+  if(workout.user._id.valueOf() !== userID)
+  {
+    throw new NotFoundError('User not authorized to get information about this workout');
+  }
+}
+  try{
+    return res.status(StatusCodes.OK).json(workout);
+  }catch(err){
+    res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
+  }
+};
 
-module.exports = { add_workout, get_workouts };
+module.exports = { add_workout, get_workouts, get_singleworkout};

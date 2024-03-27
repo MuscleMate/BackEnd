@@ -205,7 +205,7 @@ const getSingleTournament = async(req,res) => {
     if (!tournament) {
         throw new NotFoundError(`No tournament with id : ${id}`);
     }
-    if(tournament.contestants.indexOf(userID) === -1)
+    if(tournament.contestants.contestants.indexOf(userID) === -1)
     {
         throw new NotFoundError('User not authorized to get information about this tournament');
     }
