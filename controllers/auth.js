@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
+const Token = require("../models/Token");
 const { createJWT, attachCookies } = require("../utils/JWT");
 const { BadRequestError } = require("../errors");
 
@@ -23,8 +24,12 @@ const register = async (req, res) => {
 
   const user = await User.create(req.body);
 
-  const token = createJWT(user._id);
-  attachCookies(res, token);
+  const tokenValue = createJWT(user._id);
+  attachCookies(res, tokenValue);
+  user.save();
+
+  const token = new Token({ token: tokenValue, user: user._id });
+  await token.save();
 
   res.status(StatusCodes.CREATED).json({ user: user._id });
 };
@@ -52,8 +57,15 @@ const login = async (req, res) => {
     throw new BadRequestError("Invalid credentials");
   }
 
-  const token = createJWT(user._id);
-  attachCookies(res, token);
+  // TODO 
+  // check if valid token do not create
+
+  const tokenValue = createJWT(user._id);
+  attachCookies(res, tokenValue);
+  user.save();
+
+  const token = new Token({ token: tokenValue, user: user._id });
+  await token.save();
 
   res.status(StatusCodes.OK).json({ user: user._id });
 };
@@ -66,6 +78,21 @@ const logout = async (req, res) => {
   res.cookie("jwt", "", {
     maxAge: 1,
   });
+
+  const tokenValue = req.cookies.jwt;
+
+  if(!tokenValue){
+    throw new BadRequestError("You are already log out");
+  }
+
+  const tokens = await Token.find();
+  for (const token of tokens) {
+    const isMatch = await token.compareTokens(tokenValue);
+    if (isMatch) {
+      await Token.deleteOne({ _id: token._id });
+    }
+  }
+
   res.status(StatusCodes.OK).json({ message: "Logged out" });
 };
 
@@ -89,7 +116,16 @@ const reset_password = async (req,res)=>{
 
   userRet.password = password;
 
+  const tokens = await Token.find({ user: user });
+  if(tokens.length != 0){
+    await Token.deleteMany({ user: user });
+  }
+
   userRet.save();
+
+  res.cookie("jwt", "", {
+    maxAge: 1,
+  });
   res.status(StatusCodes.OK).json({ message: "Password has been changed" });
 };
 
