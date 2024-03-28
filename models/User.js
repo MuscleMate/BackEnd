@@ -62,6 +62,18 @@ const UserSchema = new mongoose.Schema({
       ref: "Tournament",
     },
   ],
+  notifications: [
+    {
+      _senderID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      message: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
 
 UserSchema.pre("save", async function (next) {
