@@ -2,6 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
 const { NotFoundError, BadRequestError } = require("../errors");
 const Tournament = require("../models/Tournament");
+const sendNotification = require("../utils/sendNotification");
 
 const getTournaments = async (req, res) => {
     try {
@@ -37,7 +38,7 @@ const createTournament = async (req, res) => {
             throw new NotFoundError('User not found');
         }
         
-        if (req.body.admins.indexOf(user._id) === -1) {
+        if (req.body.admins.indexOf(user._id.toString()) === -1) {
             throw new BadRequestError('Admins array should contain the user creating the tournament');
         }
 
@@ -188,16 +189,23 @@ const addUsersToTournament = async (req, res) => {
     if (userTBA.tournaments.includes(tournament._id)) {
         throw new NotFoundError('User is already part of the tournament');
     }
-    if (role === 'admin') {
-        await tournament.updateOne({ $push: { admins: userTBA._id } });
-        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
-    }
-    if (role === 'contestant') {
-        await tournament.updateOne({ $push: { contestants: userTBA._id } });
-        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+
+    try {
+        if (role === 'admin') {
+            await tournament.updateOne({ $push: { admins: userTBA._id } });
+            await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+        }
+        if (role === 'contestant') {
+            await tournament.updateOne({ $push: { contestants: userTBA._id } });
+            await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+        }
+        await sendNotification(user, userToBeAdded, `You have been added to the tournament ${tournament.name}`);
+        res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+
+    } catch (err) {
+        throw new BadRequestError(err.message);
     }
 
-    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
 }
 
 
