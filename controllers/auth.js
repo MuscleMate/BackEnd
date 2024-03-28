@@ -1,8 +1,10 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
 const Token = require("../models/Token");
-const { createJWT, attachCookies } = require("../utils/JWT");
-const { BadRequestError } = require("../errors");
+const { createJWT, attachCookies, isJWTValid } = require("../utils/JWT");
+const { BadRequestError, UnauthenticatedError } = require("../errors");
+const jwt = require("jsonwebtoken");
+const sendEmail= require("../utils/sendEmail");
 
 /** Registers a new user
  * @url POST /auth/register
@@ -28,8 +30,7 @@ const register = async (req, res) => {
   attachCookies(res, tokenValue);
   user.save();
 
-  const token = new Token({ token: tokenValue, user: user._id });
-  await token.save();
+  await Token.create({ token: tokenValue, user: user._id });
 
   res.status(StatusCodes.CREATED).json({ user: user._id });
 };
@@ -58,14 +59,13 @@ const login = async (req, res) => {
   }
 
   // TODO 
-  // check if valid token do not create
+  // check if valid token, do not create
 
   const tokenValue = createJWT(user._id);
   attachCookies(res, tokenValue);
   user.save();
 
-  const token = new Token({ token: tokenValue, user: user._id });
-  await token.save();
+  await Token.create({ token: tokenValue, user: user._id });
 
   res.status(StatusCodes.OK).json({ user: user._id });
 };
@@ -75,10 +75,6 @@ const login = async (req, res) => {
  * @response log out message
  */
 const logout = async (req, res) => {
-  res.cookie("jwt", "", {
-    maxAge: 1,
-  });
-
   const tokenValue = req.cookies.jwt;
 
   if(!tokenValue){
@@ -93,6 +89,9 @@ const logout = async (req, res) => {
     }
   }
 
+  res.cookie("jwt", "", {
+    maxAge: 1,
+  });
   res.status(StatusCodes.OK).json({ message: "Logged out" });
 };
 
@@ -129,4 +128,76 @@ const reset_password = async (req,res)=>{
   res.status(StatusCodes.OK).json({ message: "Password has been changed" });
 };
 
-module.exports = { register, login, logout, reset_password };
+/** Sends reset password mail
+ * @url POST /auth/reset-password
+ * @body email
+ * @response email sent message
+ */
+const forgot_password = async (req,res) => {
+  const { email } = req.body;
+
+  if(!email){
+    throw new BadRequestError("Please provide email");
+  }
+
+  const user = await User.findOne({email: email});
+  if(!user){
+    throw new BadRequestError("User with provided email does not exists");
+  }
+
+  const tokenValue = jwt.sign({ payload: user._id}, process.env.JWT_SECRET, {
+    expiresIn: 3600, // 1 h
+  });
+  const currentDate = new Date();
+  const earlierDate = new Date(currentDate.getTime() - (71 * 60 * 60 * 1000)); // Date 2 days and 23h eariler
+
+  const token = await Token.create({ token: tokenValue, user: user._id, expireAt: earlierDate });
+  const link = `${process.env.PROTO}://${process.env.BASE_URL}:${process.env.PORT}/auth/forgot-password-reset/${tokenValue}`;
+  sendEmail(email, 'Zmiana hasła', link);
+
+  res.status(StatusCodes.OK).json({ message: "Reset link was sent to email" });
+}
+
+/** Resets user password
+ * @url POST /auth/reset-password
+ * @body new password
+ * @response password changed
+ */
+const forgot_password_reset = async (req,res) => {
+  const tokenParam = req.params.token;
+  const password = req.body.password;
+
+  if(!tokenParam){
+    throw new BadRequestError("Please provide reset token");
+  }
+  if(!password){
+    throw new BadRequestError("Please provide password");
+  }
+
+  if(!isJWTValid(tokenParam)){
+    throw new UnauthenticatedError("Token is invalid");
+  }
+
+  const tokens = await Token.find();
+  let userID;
+  for (const token of tokens) {
+    const isMatch = await token.compareTokens(tokenParam);
+    if (isMatch) {
+      userID = token.user;
+    }
+  }
+
+  if(!userID){
+    throw new BadRequestError("User does not exists");
+  }
+
+  const user = await User.findById(userID);
+  user.password = password;
+  await user.save();
+
+  await Token.deleteMany({ user: userID });
+
+  res.status(StatusCodes.OK).json({ message: "Password has been changed" });
+}
+
+module.exports = { register, login, logout, reset_password, forgot_password, forgot_password_reset };
