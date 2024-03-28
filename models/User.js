@@ -62,6 +62,18 @@ const UserSchema = new mongoose.Schema({
       ref: "Tournament",
     },
   ],
+  receivedFriendsRequests: [
+    {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "User" 
+    }
+  ],
+  sendedFriendsRequests: [
+    {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "User" 
+    }
+  ]
 });
 
 UserSchema.pre("save", async function (next) {
