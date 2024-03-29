@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
-const { NotFoundError, BadRequestError } = require("../errors");
+const { NotFoundError, BadRequestError, UnauthorizedError } = require("../errors");
 const Tournament = require("../models/Tournament");
 
 const getTournaments = async (req, res) => {
@@ -66,7 +66,7 @@ const updateTournament = async (req, res) => {
 
     const user = await User.findById(req.body.user);
     if (tournament.admins.indexOf(user._id) === -1) {
-        throw new NotFoundError('User not authorized to update this tournament');
+        throw new UnauthorizedError('User not authorized to update this tournament');
     }
 
     // add the tournamentID to tournaments array of the admins
@@ -126,7 +126,7 @@ const updateTournamentRole = async (req, res) => {
         throw new NotFoundError(`No user found with id: ${user}`);
     }
     if (tournament.admins.indexOf(admin._id) === -1) {
-        throw new NotFoundError('User not authorized to update this tournament');
+        throw new UnauthorizedError('User not authorized to update this tournament');
     }
 
     const userToBeChangedDoc = await User.findOne({ _id: userToBeChanged });
@@ -215,7 +215,7 @@ const getSingleTournament = async(req,res) => {
     }
     if(tournament.contestants.indexOf(userID)===-1 && tournament.admins.indexOf(userID)===-1)
     {
-        throw new NotFoundError('User not authorized to get info about this tournament');
+        throw new UnauthorizedError('User not authorized to get info about this tournament');
     }
     try{
         res.status(StatusCodes.OK).json({ tournament });
