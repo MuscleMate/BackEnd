@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const Workout = require("../models/Workout");
-const { BadRequestError } = require("../errors");
+const { BadRequestError ,UnauthorizedError, NotFoundError} = require("../errors");
 const User = require("../models/User");
 
 /** Adds a new workout
@@ -52,16 +52,15 @@ const get_singleworkout = async(req,res)=> {
       .json({ message: "User not found" });
   }
   const workout = await Workout.findById(id);
-  console.log(workout);
   if(!workout)
   {
     throw new NotFoundError('Workout not found');
   }
-  if(workout.company.indexOf(userID) === -1||workout.access.indexOf(userID)===-1)
+  if(workout.company.indexOf(userID) === -1 && workout.access.indexOf(userID)===-1)
   {
   if(workout.user._id.valueOf() !== userID)
   {
-    throw new NotFoundError('User not authorized to get information about this workout');
+    throw new UnauthorizedError('User not authorized to get information about this workout');
   }
 }
   try{
