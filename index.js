@@ -19,7 +19,7 @@ const mogoSanitize = require("express-mongo-sanitize");
 const authRoutes = require("./routes/auth");
 const workoutsRoutes = require("./routes/workouts");
 const tournamentRoutes = require("./routes/tournaments");
-const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/friends");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
