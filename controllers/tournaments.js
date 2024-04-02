@@ -1,7 +1,8 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
-const { NotFoundError, BadRequestError } = require("../errors");
+const { NotFoundError, BadRequestError, UnauthorizedError } = require("../errors");
 const Tournament = require("../models/Tournament");
+const sendNotification = require("../utils/sendNotification");
 
 const getTournaments = async (req, res) => {
     try {
@@ -37,7 +38,7 @@ const createTournament = async (req, res) => {
             throw new NotFoundError('User not found');
         }
         
-        if (req.body.admins.indexOf(user._id) === -1) {
+        if (req.body.admins.indexOf(user._id.toString()) === -1) {
             throw new BadRequestError('Admins array should contain the user creating the tournament');
         }
 
@@ -66,7 +67,7 @@ const updateTournament = async (req, res) => {
 
     const user = await User.findById(req.body.user);
     if (tournament.admins.indexOf(user._id) === -1) {
-        throw new NotFoundError('User not authorized to update this tournament');
+        throw new UnauthorizedError('User not authorized to update this tournament');
     }
 
     // add the tournamentID to tournaments array of the admins
@@ -126,7 +127,7 @@ const updateTournamentRole = async (req, res) => {
         throw new NotFoundError(`No user found with id: ${user}`);
     }
     if (tournament.admins.indexOf(admin._id) === -1) {
-        throw new NotFoundError('User not authorized to update this tournament');
+        throw new UnauthorizedError('User not authorized to update this tournament');
     }
 
     const userToBeChangedDoc = await User.findOne({ _id: userToBeChanged });
@@ -188,16 +189,72 @@ const addUsersToTournament = async (req, res) => {
     if (userTBA.tournaments.includes(tournament._id)) {
         throw new NotFoundError('User is already part of the tournament');
     }
-    if (role === 'admin') {
-        await tournament.updateOne({ $push: { admins: userTBA._id } });
-        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
-    }
-    if (role === 'contestant') {
-        await tournament.updateOne({ $push: { contestants: userTBA._id } });
-        await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+
+    try {
+        if (role === 'admin') {
+            await tournament.updateOne({ $push: { admins: userTBA._id } });
+            await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+        }
+        if (role === 'contestant') {
+            await tournament.updateOne({ $push: { contestants: userTBA._id } });
+            await userTBA.updateOne({ $push: { tournaments: tournament._id } });
+        }
+        await sendNotification(user, userToBeAdded, `You have been added to the tournament ${tournament.name}`);
+        res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+
+    } catch (err) {
+        throw new BadRequestError(err.message);
     }
 
-    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+}
+const getSingleTournament = async(req,res) => {
+    const{ id } = req.params;
+    const { user: userID } = req.body;
+    if(!user)
+    {
+        throw new NotFoundError('User not found'); 
+    }
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+    if(tournament.contestants.contestants.indexOf(userID) === -1)
+    {
+        throw new NotFoundError('User not authorized to get information about this tournament');
+    }
+    try{
+        res.status(StatusCodes.OK).json({ tournament});
+    }
+    catch(error)
+    {
+        res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
+    }
+
+}
+
+
+const getSingleTournament = async(req,res) => {
+    const { id } = req.params;
+    const { user: userID } = req.body;
+    const user = await User.findById(userID);
+    if(!user)
+    {
+        throw new NotFoundError('User does not exist');
+    }
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+    if(tournament.contestants.indexOf(userID)===-1 && tournament.admins.indexOf(userID)===-1)
+    {
+        throw new UnauthorizedError('User not authorized to get info about this tournament');
+    }
+    try{
+        res.status(StatusCodes.OK).json({ tournament });
+    }
+    catch(error){
+        throw new BadRequestError(error.message);
+    }
 }
 
 
@@ -206,5 +263,6 @@ module.exports = {
     createTournament,
     updateTournament,
     updateTournamentRole,
-    addUsersToTournament
+    addUsersToTournament,
+    getSingleTournament
 };

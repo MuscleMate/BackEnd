@@ -21,6 +21,7 @@ const workoutsRoutes = require("./routes/workouts");
 const tournamentRoutes = require("./routes/tournaments");
 const userRoutes = require("./routes/friends");
 
+
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
