@@ -21,10 +21,10 @@ const getFriends = async(req,res) => {
 }
 
 const addFriend = async(req,res) =>{
-    const {userID} = req.body;
-    const { user:_id } = req.body;
-    const user = await User.findById(_id);
-    const userToBeAdded = await User.findById(userID);
+    const {id} = req.body;
+    const { user:userID } = req.body;
+    const user = await User.findById(userID);
+    const userToBeAdded = await User.findById(id);
     if(!user)
     {
         throw new NotFoundError('User does not exist');
