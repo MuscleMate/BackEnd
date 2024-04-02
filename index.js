@@ -19,8 +19,8 @@ const mogoSanitize = require("express-mongo-sanitize");
 const authRoutes = require("./routes/auth");
 const workoutsRoutes = require("./routes/workouts");
 const tournamentRoutes = require("./routes/tournaments");
+const userRoutes = require("./routes/user");
 const friendsRoutes = require("./routes/friends");
-
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -49,6 +49,7 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/workouts", requireAuth, workoutsRoutes);
 app.use("/tournaments", requireAuth, tournamentRoutes);
+app.use("/user", requireAuth, userRoutes);
 app.use("/friends", requireAuth, friendsRoutes);
 
 // Error handling
