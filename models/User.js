@@ -50,6 +50,18 @@ const UserSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  receivedFriendsRequests: [
+    {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "User" 
+    }
+  ],
+  sentFriendsRequests: [
+    {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "User" 
+    }
+  ],
   workouts: [
     {
       type: mongoose.Schema.Types.ObjectId,
