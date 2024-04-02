@@ -207,6 +207,30 @@ const addUsersToTournament = async (req, res) => {
     }
 
 }
+const getSingleTournament = async(req,res) => {
+    const{ id } = req.params;
+    const { user: userID } = req.body;
+    if(!user)
+    {
+        throw new NotFoundError('User not found'); 
+    }
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+    if(tournament.contestants.contestants.indexOf(userID) === -1)
+    {
+        throw new NotFoundError('User not authorized to get information about this tournament');
+    }
+    try{
+        res.status(StatusCodes.OK).json({ tournament});
+    }
+    catch(error)
+    {
+        res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
+    }
+
+}
 
 
 const getSingleTournament = async(req,res) => {
