@@ -42,6 +42,7 @@ const addFriend = async(req,res) =>{
         await user.updateOne({ $push: { friends: userToBeAdded._id} });
         await user.updateOne({ $pull: { receivedFriendsRequests: userToBeAdded._id} });
         await userToBeAdded.updateOne({ $pull: { sentFriendsRequests: user._id} });
+        res.status(StatusCodes.NO_CONTENT).json({});
     } catch(error){
         throw new BadRequestError(error.message);
     }
