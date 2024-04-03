@@ -115,4 +115,20 @@ const updateUser = async (req, res) => {
     }
 };
 
-module.exports = { getUser, updateUser, getCurrentUser };
+const deleteUser = async (req, res) => {
+    const { user: userID } = req.body;
+    console.log(req.body)
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        await user.deleteOne();
+        res.status(StatusCodes.OK).json({ message: "User deleted successfully" });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+module.exports = { getUser, updateUser, getCurrentUser, deleteUser };
