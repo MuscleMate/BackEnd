@@ -33,20 +33,37 @@ const getTournaments = async (req, res) => {
 const createTournament = async (req, res) => {
     try {
         const user = await User.findById(req.body.user);
-        
+
         if (!user) {
             throw new NotFoundError('User not found');
         }
-        
+
         if (req.body.admins.indexOf(user._id.toString()) === -1) {
             throw new BadRequestError('Admins array should contain the user creating the tournament');
         }
 
+        const allUsersIDs = [...req.body.admins, ...req.body.contestants]
+        var allUsers = [];
+
+        for (let i = 0; i < allUsersIDs.length; i++) {
+            const user = await User.findById(allUsersIDs[i]);
+
+            if (!user) {
+                throw new NotFoundError('User you are trying to add does not exist');
+            }
+
+            allUsers.push(user);
+        }
+
         const tournament = await Tournament.create(req.body)
 
-        await user.updateOne({ $push: { tournaments: tournament._id } });
+        allUsers.forEach(async (user) => {
+            if (!user.tournaments.includes(tournament._id)) {
+                await user.updateOne({ $push: { tournaments: tournament._id } });
+            }
+        });
 
-        res.status(StatusCodes.CREATED).json({ tournamentID: tournament._id });
+        res.status(StatusCodes.CREATED).json(tournament);
     } catch (error) {
         throw new BadRequestError(error.message);
     }
@@ -208,26 +225,24 @@ const addUsersToTournament = async (req, res) => {
 
 }
 
-const getSingleTournament = async(req,res) => {
+const getSingleTournament = async (req, res) => {
     const { id } = req.params;
     const { user: userID } = req.body;
     const user = await User.findById(userID);
-    if(!user)
-    {
+    if (!user) {
         throw new NotFoundError('User does not exist');
     }
     const tournament = await Tournament.findById(id);
     if (!tournament) {
         throw new NotFoundError(`No tournament with id : ${id}`);
     }
-    if(tournament.contestants.indexOf(userID)===-1 && tournament.admins.indexOf(userID)===-1)
-    {
+    if (tournament.contestants.indexOf(userID) === -1 && tournament.admins.indexOf(userID) === -1) {
         throw new UnauthorizedError('User not authorized to get info about this tournament');
     }
-    try{
+    try {
         res.status(StatusCodes.OK).json({ tournament });
     }
-    catch(error){
+    catch (error) {
         throw new BadRequestError(error.message);
     }
 }
