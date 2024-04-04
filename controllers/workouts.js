@@ -68,7 +68,7 @@ const delete_workout = async(req,res) => {
       { $pull: { workouts: id } }
     );
     await workout.deleteOne();
-    res.status(StatusCodes.NO_CONTENT).json();
+    res.status(StatusCodes.OK).json({msg: "Workout deleted"});
   }
   catch(err) {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
