@@ -76,7 +76,7 @@ const updateTournament = async (req, res) => {
     if (Object.keys(req.body).length === 1) {
         throw new BadRequestError('Provide data to update');
     }
-
+    console.log(id)
     const tournament = await Tournament.findById(id);
     if (!tournament) {
         throw new NotFoundError(`No tournament with id : ${id}`);
@@ -88,7 +88,7 @@ const updateTournament = async (req, res) => {
     }
 
     // add the tournamentID to tournaments array of the admins
-    if (admins?.length) {
+    if (admins?.length > 0) {
         for (let i = 0; i < admins.length; i++) {
             const admin = await User.findById(admins[i]);
             if (!admin) {
@@ -101,7 +101,7 @@ const updateTournament = async (req, res) => {
     }
 
     // add the tournamentID to tournaments array of the contestants
-    if (contestants?.length) {
+    if (contestants?.length > 0) {
         for (let i = 0; i < contestants.length; i++) {
             const contestant = await User.findById(contestants[i]);
             if (!contestant) {
@@ -151,6 +151,7 @@ const updateTournamentRole = async (req, res) => {
     if (!userToBeChangedDoc) {
         throw new NotFoundError(`No user found with id: ${userToBeChanged}`);
     }
+    console.log(userToBeChangedDoc.tournaments)
     if (userToBeChangedDoc.tournaments.indexOf(tournament._id) === -1) {
         throw new NotFoundError('User is not part of the tournament');
     }
@@ -171,7 +172,7 @@ const updateTournamentRole = async (req, res) => {
         }
     }
 
-    res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+    res.status(StatusCodes.OK).json({ msg: "User role changed" });
 }
 
 const addUsersToTournament = async (req, res) => {
@@ -217,7 +218,7 @@ const addUsersToTournament = async (req, res) => {
             await userTBA.updateOne({ $push: { tournaments: tournament._id } });
         }
         await sendNotification(user, userToBeAdded, `You have been added to the tournament ${tournament.name}`);
-        res.status(StatusCodes.NO_CONTENT).json({ msg: "OK" });
+        res.status(StatusCodes.OK).json({ msg: "User added" });
 
     } catch (err) {
         throw new BadRequestError(err.message);
