@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const { getFriends } = require("../controllers/friends.js");
-
+const { getFriends,sendRequest, addFriend } = require("../controllers/friends.js");
 
 router.route("/").get(getFriends);
+router.route("/send-request").post(sendReqeust);
+router.route("/accept").post(addFriend)
 
 module.exports = router;
