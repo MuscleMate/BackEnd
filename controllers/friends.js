@@ -40,6 +40,10 @@ const sendRequest = async(req,res) =>{
     {
         throw new BadRequestError('Invitation has already been sent');
     }
+    if(user.receivedFriendsRequests.indexOf(userToBeAdded._id)!==-1)
+    {
+        throw new BadRequestError('You have already received a friend request from this user');
+    }
     try{
         await userToBeAdded.updateOne({ $push: { receivedFriendsRequests: user._id} });
         await user.updateOne({ $push: { sentFriendsRequests: userToBeAdded._id} });
