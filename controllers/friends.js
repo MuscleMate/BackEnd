@@ -19,7 +19,7 @@ const getFriends = async(req,res) => {
         throw new BadRequestError(error.message);
     } 
 }
-const sendReqeust = async(req,res) =>{
+const sendRequest = async(req,res) =>{
     const {id} = req.body;
     const { user:userID } = req.body;
     const user = await User.findById(userID);
@@ -49,4 +49,33 @@ const sendReqeust = async(req,res) =>{
     }
 }
 
-module.exports ={getFriends, sendReqeust};
+const addFriend = async(req,res) =>{
+    const {id} = req.body;
+    const { user:userID } = req.body;
+    const user = await User.findById(userID);
+    const userToBeAdded = await User.findById(id);
+    if(!user)
+    {
+        throw new NotFoundError('User does not exist');
+    }
+    if(!userToBeAdded)
+    {
+        throw new NotFoundError('User to be added does not exist');
+    }
+    if(user.receivedFriendsRequests.indexOf(userToBeAdded._id)===-1)
+    {
+        throw new NotFoundError('User to be added did not send a request');
+    }
+    try{
+        await userToBeAdded.updateOne({ $push: { friends: user._id} });
+        await user.updateOne({ $push: { friends: userToBeAdded._id} });
+        await user.updateOne({ $pull: { receivedFriendsRequests: userToBeAdded._id} });
+        await userToBeAdded.updateOne({ $pull: { sentFriendsRequests: user._id} });
+        res.status(StatusCodes.NO_CONTENT).json({});
+    } catch(error){
+        throw new BadRequestError(error.message);
+    }
+}
+
+module.exports ={getFriends,addFriend, sendRequest};
+
