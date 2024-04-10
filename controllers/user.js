@@ -131,4 +131,19 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { getUser, updateUser, getCurrentUser, deleteUser };
+const getNotifications = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({ notifications: user.notifications });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications };

@@ -52,14 +52,14 @@ const UserSchema = new mongoose.Schema({
   ],
   receivedFriendsRequests: [
     {
-     type: mongoose.Schema.Types.ObjectId,
-     ref: "User" 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     }
   ],
   sentFriendsRequests: [
     {
-     type: mongoose.Schema.Types.ObjectId,
-     ref: "User" 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     }
   ],
   workouts: [
@@ -76,13 +76,27 @@ const UserSchema = new mongoose.Schema({
   ],
   notifications: [
     {
-      _senderID: {
+      senderID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
+        required: true,
+      },
+      receiverID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
       },
       message: {
         type: String,
         required: true,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+      isRead: {
+        type: Boolean,
+        default: false,
       },
     },
   ],
