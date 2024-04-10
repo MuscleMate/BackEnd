@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const Workout = require("../models/Workout");
-const { BadRequestError ,UnauthorizedError, NotFoundError} = require("../errors");
+const { BadRequestError, UnauthorizedError, NotFoundError} = require("../errors");
 const User = require("../models/User");
 
 /** Adds a new workout
@@ -103,4 +103,39 @@ const get_singleworkout = async(req,res)=> {
   }
 };
 
-module.exports = { add_workout, get_workouts, delete_workout, get_singleworkout};
+const update_workout = async(req,res) => {
+  const { user: userID } = req.body;
+  const { id } = req.params;
+
+  const validFields = ["user", "title", "description", "date", "duration", "exercises", "equipment", "company", "favourite", "access"]
+  if (Object.keys(req.body).some((field) => !validFields.includes(field))) {
+    throw new BadRequestError(`Invalid field. Valid fields are: ${validFields.join(", ")}`);
+  }
+
+  try{
+    const user = await User.findById(userID);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const workout = await Workout.findById(id);
+    if(!workout)
+    {
+      throw new NotFoundError('Workout not found');
+    }
+
+    if (workout.user != userID) 
+    {
+      throw new UnauthorizedError('User not authorized to update this workout');
+    }
+
+    const updatedWorkout = await Workout.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
+
+    res.status(StatusCodes.OK).json({workout: updatedWorkout});
+  }
+  catch(err) {
+    res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
+  }
+}
+
+module.exports = { add_workout, get_workouts, delete_workout, get_singleworkout, update_workout};
