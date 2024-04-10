@@ -1,6 +1,8 @@
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 const User = require("../models/User");
+const Workout = require("../models/Workout");
+const Tournament = require("../models/Tournament");
 
 const getUser = async (req, res) => {
     const { id } = req.params;
@@ -117,11 +119,57 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     const { user: userID } = req.body;
-    console.log(req.body)
+
     try {
         const user = await User.findById(userID);
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        for (let i = 0; i < user.friends.length; i++) {
+            const friend = await User.findById(user.friends[i]);
+            friend.friends = friend.friends.filter((friend) => friend.toString() !== userID);
+            await friend.save();
+        }
+
+        for (let i = 0; i < user.receivedFriendsRequests.length; i++) {
+            const friend = await User.findById(user.receivedFriendsRequests[i]);
+            friend.sentFriendsRequests = friend.sentFriendsRequests.filter(
+                (friend) => friend.toString() !== userID
+            );
+            await friend.save();
+        }
+
+        for (let i = 0; i < user.sentFriendsRequests.length; i++) {
+            const friend = await User.findById(user.sentFriendsRequests[i]);
+            friend.receivedFriendsRequests = friend.receivedFriendsRequests.filter(
+                (friend) => friend.toString() !== userID
+            );
+            await friend.save();
+        }
+
+        for (let i = 0; i < user.workouts.length; i++) {
+            const workout = await Workout.findById(user.workouts[i]);
+            if (workout.user.toString() === userID) {
+                await workout.deleteOne();
+            } else {
+                workout.company = workout.company.filter((company) => company.toString() !== userID);
+                workout.access = workout.access.filter((access) => access.toString() !== userID);
+                await workout.save();
+            }
+        }
+
+        for (let i = 0; i < user.tournaments.length; i++) {
+            const tournament = await Tournament.findById(user.tournaments[i]);
+            if (tournament.participants.length === 1 && tournament.participants[0].toString() === userID) {
+                await tournament.deleteOne();
+            }
+            else {
+                tournament.participants = tournament.participants.filter(
+                    (participant) => participant.toString() !== userID
+                );
+                await tournament.save();
+            }
         }
 
         await user.deleteOne();
