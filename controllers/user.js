@@ -133,6 +133,7 @@ const deleteUser = async (req, res) => {
 
 const getNotifications = async (req, res) => {
     const { user: userID } = req.body;
+    const { count } = req.query;
 
     try {
         const user = await User.findById(userID);
@@ -140,7 +141,10 @@ const getNotifications = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({ notifications: user.notifications });
+        const length = user.notifications.length;
+        const notifications = user.notifications.slice(length - count, length);
+
+        res.status(StatusCodes.OK).json({ notifications: notifications });
     } catch (err) {
         throw new BadRequestError(err);
     }
