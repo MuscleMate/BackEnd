@@ -74,6 +74,18 @@ const UserSchema = new mongoose.Schema({
       ref: "Tournament",
     },
   ],
+  suplements: [
+    {
+      name: {
+        type: String,
+        required: [true, "Please provide name of the suplement"],
+      },
+      amount: {
+        type: Number,
+        required: [true, "Please provide amount of the suplement"],
+      },
+    }
+  ],
   notifications: [
     {
       senderID: {
