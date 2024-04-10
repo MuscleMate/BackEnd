@@ -11,8 +11,10 @@ const sendNotification = async (senderID, receiverID, message) => {
   if (!receiver) {
     throw BadRequestError(`User with id ${receiverID} not found`);
   }
+
+  const date = new Date();
   
-  await receiver.updateOne({ $push: { notifications: { _senderID: senderID, message } } });
+  await receiver.updateOne({ $push: { notifications: { senderID, message, date } } });
 };
 
 module.exports = sendNotification;
