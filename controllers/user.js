@@ -141,8 +141,7 @@ const getNotifications = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        const length = user.notifications.length;
-        const notifications = user.notifications.slice(length - count, length);
+        const notifications = user.notifications.sort((a, b) => b.date - a.date).slice(0, count);
 
         res.status(StatusCodes.OK).json({ notifications: notifications });
     } catch (err) {
