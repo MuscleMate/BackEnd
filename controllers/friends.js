@@ -81,5 +81,26 @@ const addFriend = async(req,res) =>{
     }
 }
 
-module.exports ={getFriends,addFriend, sendRequest};
+const searchUser = async(req,res) =>{
+    const { searchText } = req.body;
+    const { count } = req.query;
+    
+    try {
+        const users = await User.find(
+            {
+                $or: [
+                    {firstName: {$regex: searchText, $options: 'i'}},
+                    {lastName: {$regex: searchText, $options: 'i'}},
+                    {email: {$regex: searchText, $options: 'i'}}
+                ]
+            },
+        ).select('_id firstName lastName email').limit(count);
+            
+        res.status(StatusCodes.OK).json({users})
+    } catch (err) {
+        throw new BadRequestError(err.message);
+    }
+}
+
+module.exports ={getFriends,addFriend, sendRequest, searchUser};
 
