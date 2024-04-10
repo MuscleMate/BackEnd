@@ -248,6 +248,40 @@ const getSingleTournament = async (req, res) => {
     }
 }
 
+const deleteTournament = async (req, res) => {
+    const { id } = req.params;
+    const { user: userID } = req.body;
+    const user = await User.findById(userID);
+    if (!user) {
+        throw new NotFoundError('User does not exist');
+    }
+
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${id}`);
+    }
+
+    if (tournament.admins.indexOf(userID) === -1) {
+        throw new UnauthorizedError('User not authorized to delete this tournament');
+    }
+
+    try {
+        for (let i = 0; i < tournament.admins.length; i++) {
+            const admin = await User.findById(tournament.admins[i]);
+            await admin.updateOne({ $pull: { tournaments: tournament._id } });
+        }
+        for (let i = 0; i < tournament.contestants.length; i++) {
+            const contestant = await User.findById(tournament.contestants[i]);
+            await contestant.updateOne({ $pull: { tournaments: tournament._id } });
+        }
+        await tournament.deleteOne();
+        res.status(StatusCodes.OK).json({ msg: "Tournament deleted" });
+    }
+    catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
 
 module.exports = {
     getTournaments,
@@ -255,5 +289,6 @@ module.exports = {
     updateTournament,
     updateTournamentRole,
     addUsersToTournament,
-    getSingleTournament
+    getSingleTournament,
+    deleteTournament
 };
