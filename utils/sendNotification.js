@@ -11,7 +11,7 @@ const sendNotification = async (senderID, receiverID, message) => {
   if (!receiver) {
     throw BadRequestError(`User with id ${receiverID} not found`);
   }
-console.log(receiver);
+
   try {
     await receiver.updateOne({ $push: { notifications: { senderID, receiverID, message } } });
   } catch (err) {
