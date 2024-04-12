@@ -3,6 +3,7 @@ const { BadRequestError, NotFoundError } = require("../errors");
 const User = require("../models/User");
 const Workout = require("../models/Workout");
 const Tournament = require("../models/Tournament");
+const increaseRP = require("../utils/increaseRP");
 
 const getUser = async (req, res) => {
     const { id } = req.params;
@@ -66,7 +67,10 @@ const getUser = async (req, res) => {
 const getCurrentUser = async (req, res) => {
     const { user: userID } = req.body;
 
+    
     try {
+        await increaseRP(userID, "workout");
+
         const user = await User.findById(userID)
             .populate("friends")
             .populate("workouts")

@@ -44,6 +44,23 @@ const UserSchema = new mongoose.Schema({
     type: "String",
     enum: ["male", "female", "other"],
   },
+  RP: {
+    level: {
+      type: Number,
+      min: 1,
+      default: 1,
+    },
+    levelPoints: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    levelPointsLimit: {
+      type: Number,
+      min: 0,
+      default: 100,
+    }
+  },
   friends: [
     {
       type: mongoose.Schema.Types.ObjectId,
