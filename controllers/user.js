@@ -67,7 +67,7 @@ const getUser = async (req, res) => {
 const getCurrentUser = async (req, res) => {
     const { user: userID } = req.body;
 
-    
+
     try {
         await increaseRP(userID, "workout");
 
@@ -96,7 +96,6 @@ const updateUser = async (req, res) => {
         "email",
         "dateOfBirth",
         "height",
-        "weight",
         "firstName",
         "lastName",
         "gender",
@@ -201,4 +200,62 @@ const getNotifications = async (req, res) => {
     }
 }
 
-module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications };
+const getCurrentWeight = async (req, res) => {
+    const { user: userID } = req.body;
+
+    const user = await User.findById(userID);
+    if (!user) {
+        throw new NotFoundError(`User with id ${userID} not found`);
+    }
+
+    const weight = user.weightHistory;
+    if (!weight || weight.length === 0 ) {
+        throw new NotFoundError("No weight data found");
+    }
+
+    const currentWeight = weight.sort((a, b) => b.date - a.date)[0];
+
+    res.status(StatusCodes.OK).json({currentWeight: currentWeight.weight});
+}
+
+const updateCurrentWeight = async (req, res) => {
+    const { user: userID } = req.body;
+    const { weight } = req.body;
+
+    if (!weight) {
+        throw new BadRequestError("Please provide weight");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.weightHistory.push({ weight });
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "Weight updated successfully" });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const getWeightHistory = async (req, res) => { 
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+    
+        res.status(StatusCodes.OK).json({weightHistory: user.weightHistory});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+
+}
+
+
+module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, updateCurrentWeight, getWeightHistory };

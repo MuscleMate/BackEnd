@@ -35,11 +35,18 @@ const UserSchema = new mongoose.Schema({
     min: 1,
     max: 250,
   },
-  weight: {
-    type: Number,
-    min: 1,
-    max: 250,
-  },
+  weightHistory: [
+    {
+      weight: {
+        type: Number,
+        min: 1,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    }
+  ],
   gender: {
     type: "String",
     enum: ["male", "female", "other"],

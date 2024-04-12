@@ -10,7 +10,8 @@ const { BadRequestError } = require("../errors");
  * @cookies jwt
  */
 const register = async (req, res) => {
-  const { email, firstName, password } = req.body;
+  const { email, firstName, password, weight } = req.body;
+  req.body.weightHistory = { weight: weight }
 
   if (!email || !password || !firstName) {
     throw new BadRequestError("Please provide email, firstName and password");
@@ -75,15 +76,15 @@ const logout = async (req, res) => {
  * @response password change message
  * @cookies jwt
  */
-const reset_password = async (req,res)=>{
-  const { user, password} = req.body;
+const reset_password = async (req, res) => {
+  const { user, password } = req.body;
 
   if (!password) {
     throw new BadRequestError("Please provide new password");
   }
 
   const userRet = await User.findById(user);
-  if (!userRet){
+  if (!userRet) {
     throw new BadRequestError("User not found");
   }
 
