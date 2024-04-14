@@ -102,5 +102,31 @@ const searchUser = async(req,res) =>{
     }
 }
 
-module.exports ={getFriends,addFriend, sendRequest, searchUser};
+const deleteFriend = async(req,res) =>{
+    const{id} = req.body;
+    const { user:userID } = req.body;
+    const user = await User.findById(userID);
+    const userToDeleted = await User.findById(id);
+    if(!user)
+    {
+        throw new NotFoundError('User does not exist');
+    }
+    if(!userToDeleted)
+    {
+        throw new NotFoundError('User to be deleted  does not exist');
+    }
+    if(user.friends.indexOf(userToDeleted._id)===-1)
+    {
+        throw new NotFoundError('User to be deleted from friend list is not a friend');
+    }
+    try{
+        await user.updateOne({ $pull: { friends: userToDeleted._id} });
+        await userToDeleted.updateOne({ $pull: { friends: user._id} });
+        res.status(StatusCodes.NO_CONTENT).json({});
+    } catch(error){
+        throw new BadRequestError(error.message);
+    }
+}
+
+module.exports ={getFriends,addFriend, sendRequest, searchUser,deleteFriend };
 
