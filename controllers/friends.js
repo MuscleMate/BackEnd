@@ -105,6 +105,32 @@ const searchUser = async(req,res) =>{
     }
 }
 
+const cancelFriend = async(req,res) =>{
+    const{id} = req.body;
+    const { user:userID } = req.body;
+    const user = await User.findById(userID);
+    const userToBeCanceled = await User.findById(id);
+    if(!user)
+    {
+        throw new NotFoundError('User does not exist');
+    }
+    if(!userToBeCanceled)
+    {
+        throw new NotFoundError('User to be denyed friend request does not exist');
+    }
+    if(user.sentFriendsRequests.indexOf(userToBeCanceled._id)===-1)
+    {
+        throw new NotFoundError('User did not send a friend request to that user');
+    }
+    try{
+        await user.updateOne({ $pull: { sentFriendsRequests: userToBeCanceled._id} });
+        await userToBeCanceled.updateOne({ $pull: { receivedFriendsRequests: user._id} });
+        res.status(StatusCodes.NO_CONTENT).json({});
+    } catch(error){
+        throw new BadRequestError(error.message);
+    }
+}
+
 const deleteFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
@@ -160,6 +186,5 @@ const deleteFriend = async(req,res) =>{
 }
 
 
-module.exports ={getFriends,addFriend, sendRequest, searchUser,deleteFriend,denyFriend };
-
+module.exports ={getFriends,addFriend, sendRequest, searchUser, cancelFriend,denyFriend};
 
