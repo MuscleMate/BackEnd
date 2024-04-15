@@ -7,7 +7,8 @@ const { getUser, updateUser, getCurrentUser, deleteUser, getNotifications,
     getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, 
     addSuplement, getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus,
-    searchUser, getLevel, getMeasurementHistory, getMeasurements, updateMeasurement } = require('../controllers/user')
+    searchUser, getLevel, getMeasurementHistory, getMeasurements, addMeasurement, 
+    updateMeasurement, deleteMeasurement, updateMeasurementName } = require('../controllers/user')
 
 router.route('/').put(updateUser).get(getCurrentUser).delete(deleteUser)
 router.route("/search").post(searchUser)
@@ -28,7 +29,7 @@ router.route('/suplement/doseHistory').get(getSuplementHistory)
 router.route('/suplement/dose').put(updateSuplementDose)
 router.route('/suplement/name').put(updateSuplementName)
 router.route('/suplement/status').put(updateSuplementStatus)
-router.route('/measurements').get(getMeasurements).put(updateMeasurement)
+router.route('/measurements').get(getMeasurements).post(addMeasurement).put(updateMeasurement).delete(deleteMeasurement)
 router.route('/measurements/history').get(getMeasurementHistory)
 router.route('/:id').get(getUser)
 

@@ -822,7 +822,7 @@ const getMeasurements = async (req, res) => {
     }
 }
 
-const updateMeasurement = async (req, res) => {
+const addMeasurement = async (req, res) => {
     const { user: userID, name, size } = req.body;
 
     if (!name || !size) {
@@ -850,9 +850,96 @@ const updateMeasurement = async (req, res) => {
     }
 }
 
+const updateMeasurement = async (req, res) => {
+    const { user: userID, name, measurementID, newName, newSize } = req.body;
+
+    if (!name) {
+        throw new BadRequestError("Name of the measurement is required to update measurement");
+    }
+
+    if (!newName && !newSize) {
+        throw new BadRequestError("New name or new size is required to update measurement");
+    }
+
+    if (newSize && !measurementID) {
+        throw new BadRequestError("Measurement ID is required to update size of the measurement");
+    }
+
+    if (name === newName) {
+        throw new BadRequestError("New name cannot be the same as the old name");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+        
+        const measurement = user.measurements.find((measurement) => measurement.name === name);
+        if (!measurement) {
+            throw new NotFoundError(`Measurement with name ${name} not found`);
+        }
+        
+        if (newSize) {
+            const history = measurement.history.find((history) => history._id.toString() === measurementID);
+            if (!history) {
+                throw new NotFoundError(`Measurement with id ${measurementID} not found`);
+            }
+
+            if (newSize === history.size) {
+                throw new BadRequestError(`Size is already set to ${newSize}`);
+            }
+
+            history.size = newSize;
+        }
+
+        if (newName) {
+            measurement.name = newName;
+        }
+
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ updatedMeasurement: measurement });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const deleteMeasurement = async (req, res) => {
+    const { user: userID, name, measurementID } = req.body;
+
+    if (!name || !measurementID) {
+        throw new BadRequestError("Name and measurement ID are required to delete measurement");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        const measurement = user.measurements.find((measurement) => measurement.name === name);
+        if (!measurement) {
+            throw new NotFoundError(`Measurement with name ${name} not found`);
+        }
+
+        const history = measurement.history.find((history) => history._id.toString() === measurementID);
+        if (!history) {
+            throw new NotFoundError(`Measurement with id ${measurementID} not found`);
+        }
+
+        measurement.history = measurement.history.filter((history) => history._id.toString() !== measurementID);
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ message: "Measurement deleted successfully" });
+    } catch (err) {
+        throw new BadRequestError(err); 
+    }
+}
+
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
     getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel,
-    getMeasurementHistory, getMeasurements, updateMeasurement };
+    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement };
