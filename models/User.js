@@ -71,7 +71,7 @@ const UserSchema = new mongoose.Schema({
       min: 0,
       default: 0,
     },
-    levelPointsLimit: {
+    levelPointsMax: {
       type: Number,
       min: 0,
       default: 100,

@@ -1,14 +1,6 @@
 const { InternalServerError } = require('../errors');
 const User = require('../models/User');
 
-const actions = [
-    'tournamentWin',
-    'tournamentPodium',
-    'tournamentParticipation',
-    'challenge',
-    'workout'
-]
-
 /** Increases rp points and levels up the user if necessary
  * @param {string} userID The user id
  * @param {string} action enum like variable with possible values: tournamentWin, tournamentPodium, tournamentParticipation, challenge, workout
@@ -35,20 +27,20 @@ const increaseRP = async (userID, action) => {
 
     let currentLevel = user.RP.level;
     let currentPoints = user.RP.levelPoints;
-    let currentPointsLimit = user.RP.levelPointsLimit;
+    let currentPointsMax = user.RP.levelPointsMax;
 
     const levelMultiplier = 1 + (currentLevel - 1) * 2;
     currentPoints += rpAmountEnum[action] * levelMultiplier;
-    if (currentPoints >= currentPointsLimit) {
+    if (currentPoints >= currentPointsMax) {
         currentLevel++;
-        currentPoints -= currentPointsLimit;
-        currentPointsLimit = currentPointsLimit * 2 + 50;
+        currentPoints -= currentPointsMax;
+        currentPointsMax = currentPointsMax * 2 + 50;
     }
 
     user.RP = {
         level: currentLevel,
         levelPoints: currentPoints,
-        levelPointsLimit: currentPointsLimit,
+        levelPointsMax: currentPointsMax,
     }
 
     await user.save();
