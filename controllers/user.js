@@ -778,8 +778,81 @@ const getLevel = async (req, res) => {
     }
 }
 
+const getMeasurementHistory = async (req, res) => {
+    const { user: userID } = req.body;
+    const { type } = req.query;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+        
+        let measurements = user.measurements;
+        if (type) {
+            measurements = measurements.filter((measurement) => measurement.name === type);
+        }
+
+        res.status(StatusCodes.OK).json({ measurements });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const getMeasurements = async (req, res) => {
+    const { user: userID } = req.body;
+    const { type } = req.query;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+        
+        let measurements = user.measurements;
+        if (type) {
+            measurements = measurements.filter((measurement) => measurement.name === type);
+        }
+
+        measurements = measurements.map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0]}))
+
+        res.status(StatusCodes.OK).json({ measurements });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateMeasurement = async (req, res) => {
+    const { user: userID, name, size } = req.body;
+
+    if (!name || !size) {
+        throw new BadRequestError("Please provide name and size of the measurement");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+        
+        const measurement = user.measurements.find((measurement) => measurement.name === name);
+        if (!measurement) {
+            user.measurements.push({ name, history: [{ size }] });
+        } else {
+            measurement.history.push({ size });
+        }
+
+        await user.save();
+
+        res.status(StatusCodes.CREATED).json({ measurement: name, updatedMeasurement: size });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
-    getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel };
+    getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel,
+    getMeasurementHistory, getMeasurements, updateMeasurement };

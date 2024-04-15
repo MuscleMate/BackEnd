@@ -146,6 +146,29 @@ const UserSchema = new mongoose.Schema({
       ]
     }
   ],
+  measurements: [
+    {
+      name: {
+        type: String,
+        required: [true, "Please provide measurement name"],
+        maxlength: 100,
+      },
+      history: [
+        {
+          size: {
+            type: Number,
+            min: 0,
+            max: 10000,
+            required: [true, "Please provide size of measurement"],
+          },
+          date: {
+            type: Date,
+            default: Date.now,
+          }
+        }
+      ]
+    }
+  ],
   notifications: [
     {
       senderID: {
