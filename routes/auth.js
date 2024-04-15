@@ -8,6 +8,6 @@ const {requireAuth} = require("../middleware/auth.js");
 router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/logout").post(logout);
-router.route("/reset-password").put(requireAuth, reset_password);
+router.route("/password/reset").put(requireAuth, reset_password);
 
 module.exports = router;

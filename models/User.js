@@ -30,16 +30,25 @@ const UserSchema = new mongoose.Schema({
   dateOfBirth: {
     type: Date,
   },
-  height: {
-    type: Number,
-    min: 1,
-    max: 250,
-  },
+  heightHistory: [
+    {
+      height: {
+        type: Number,
+        min: 1,
+        max: 400
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    }
+  ],
   weightHistory: [
     {
       weight: {
         type: Number,
         min: 1,
+        max: 2000
       },
       date: {
         type: Date,
@@ -102,12 +111,39 @@ const UserSchema = new mongoose.Schema({
     {
       name: {
         type: String,
-        required: [true, "Please provide name of the suplement"],
+        required: [true, "Please provide suplement name"],
+        maxlength: 50,
       },
-      amount: {
-        type: Number,
-        required: [true, "Please provide amount of the suplement"],
+      status: {
+        type: String,
+        enum: ["on", "break", "off"],
+        required: [true, "Please provide suplement status"],
       },
+      history: [
+        {
+          dose: {
+            type: Number,
+            min: 0,
+            max: 10000,
+            required: [true, "Please provide suplement amount"],
+          },
+          frequency: {
+            type: Number,
+            min: 0,
+            max: 1000,
+            required: [true, "Please provide suplement frequency"],
+          },
+          frequencyUnit: {
+            type: String,
+            enum: ["hour", "day", "week", "month"],
+            required: [true, "Please provide suplement frequency unit"],
+          },
+          date: {
+            type: Date,
+            default: Date.now,
+          }
+        }
+      ]
     }
   ],
   notifications: [

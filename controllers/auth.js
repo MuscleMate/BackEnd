@@ -10,9 +10,20 @@ const { BadRequestError } = require("../errors");
  * @cookies jwt
  */
 const register = async (req, res) => {
-  const { email, firstName, password, weight, height } = req.body;
+  const { email, firstName, password, weight, height, suplements } = req.body;
   req.body.weightHistory = weight && { weight: weight }
   req.body.heightHistory = height && { height: height }
+  req.body.suplements = suplements && {
+    name: suplements.name,
+    status: suplements.status,
+    history: [
+      {
+        dose: suplements.dose,
+        frequency: suplements.frequency,
+        frequencyUnit: suplements.frequencyUnit
+      }
+    ]
+  }
 
   if (!email || !password || !firstName) {
     throw new BadRequestError("Please provide email, firstName and password");

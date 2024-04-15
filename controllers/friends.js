@@ -84,31 +84,6 @@ const addFriend = async(req,res) =>{
     }
 }
 
-const searchUser = async(req,res) =>{
-    const { searchText } = req.body;
-    const { count } = req.query;
-    
-    try {
-        let users = await User.find(
-            {
-                $or: [
-                    {firstName: {$regex: searchText, $options: 'i'}},
-                    {lastName: {$regex: searchText, $options: 'i'}},
-                    {email: {$regex: searchText, $options: 'i'}}
-                ]
-            },
-        ).select('_id firstName lastName email').limit(count);
-
-        users = users.filter(user => {
-            return user._id.toString() !== req.body.user;
-        });
-
-        res.status(StatusCodes.OK).json({users})
-    } catch (err) {
-        throw new BadRequestError(err.message);
-    }
-}
-
 const cancelFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
@@ -190,5 +165,5 @@ const deleteFriend = async(req,res) =>{
 }
 
 
-module.exports ={getFriends,addFriend, sendRequest, searchUser, cancelFriend,denyFriend, deleteFriend};
+module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend};
 
