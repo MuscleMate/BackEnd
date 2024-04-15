@@ -5,16 +5,12 @@ const { NotFoundError, BadRequestError } = require("../errors");
 
 const getFriends = async(req,res) => {
     try {
-        const user = await User.findById(req.body.user).populate([
-            'friends',
-            'receivedFriendsRequests',
-            'sentFriendsRequests'
-        ]);;
+        const user = await User.findById(req.body.user).populate('friends');
         if (!user) {
             throw new NotFoundError('User not found');
         }
-        res.status(StatusCodes.OK).json({ friends: user.friends , receivedFriendsRequests: user.receivedFriendsRequests, sentFriendsRequests:user.sentFriendsRequests });
 
+        res.status(StatusCodes.OK).json({ friends: user.friends });
     } catch (error) {
         throw new BadRequestError(error.message);
     } 
@@ -164,6 +160,31 @@ const deleteFriend = async(req,res) =>{
     }
 }
 
+const getReceivedRequests = async (req, res) => {
+    try {
+        const user = await User.findById(req.body.user).populate('receivedFriendsRequests');
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
 
-module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend};
+        res.status(StatusCodes.OK).json({ receivedFriendsRequests: user.receivedFriendsRequests });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    } 
+}
+
+const getSentRequests = async (req, res) => {
+    try {
+        const user = await User.findById(req.body.user).populate('sentFriendsRequests');
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        res.status(StatusCodes.OK).json({ sentFriendsRequests: user.sentFriendsRequests });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    } 
+}
+
+module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend, getReceivedRequests, getSentRequests};
 
