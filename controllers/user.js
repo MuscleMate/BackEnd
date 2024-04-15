@@ -203,19 +203,23 @@ const getNotifications = async (req, res) => {
 const getCurrentWeight = async (req, res) => {
     const { user: userID } = req.body;
 
-    const user = await User.findById(userID);
-    if (!user) {
-        throw new NotFoundError(`User with id ${userID} not found`);
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+    
+        const weightHistory = user.weightHistory;
+        if (!weightHistory || weightHistory.length === 0 ) {
+            throw new NotFoundError("No weight data found");
+        }
+    
+        const currentWeight = weightHistory.sort((a, b) => b.date - a.date)[0];
+    
+        res.status(StatusCodes.OK).json({currentWeight: currentWeight.weight});
+    } catch (err) {
+        throw new BadRequestError(err);
     }
-
-    const weight = user.weightHistory;
-    if (!weight || weight.length === 0 ) {
-        throw new NotFoundError("No weight data found");
-    }
-
-    const currentWeight = weight.sort((a, b) => b.date - a.date)[0];
-
-    res.status(StatusCodes.OK).json({currentWeight: currentWeight.weight});
 }
 
 const updateCurrentWeight = async (req, res) => {
@@ -235,7 +239,7 @@ const updateCurrentWeight = async (req, res) => {
         user.weightHistory.push({ weight });
         await user.save();
 
-        res.status(StatusCodes.OK).json({ msg: "Weight updated successfully" });
+        res.status(StatusCodes.OK).json({ msg: "Weight updated successfully", updatedWeight: weight});
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -429,14 +433,105 @@ const updateDateOfBirth = async (req, res) => {
     }
 }
  
-const getHeightHistory = async (req, res) => {}
+const getHeightHistory = async (req, res) => {
+    const { user: userID } = req.body;
  
-const getCurrentHeight = async (req, res) => {}
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
  
-const updateCurrentHeight = async (req, res) => {}
+        res.status(StatusCodes.OK).json({heightHistory: user.heightHistory});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+ 
+const updateCurrentHeight = async (req, res) => {
+    const { user: userID } = req.body;
+    const { height } = req.body;
 
+    if (!height) {
+        throw new BadRequestError("Please provide height");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.heightHistory.push({ height });
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "Height updated successfully", updatedHeight: height });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+ 
+const getCurrentHeight = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+    
+        const heightHistory = user.heightHistory;
+        if (!heightHistory || heightHistory.length === 0 ) {
+            throw new NotFoundError("No height data found");
+        }
+    
+        const currentHeight = heightHistory.sort((a, b) => b.date - a.date)[0];
+    
+        res.status(StatusCodes.OK).json({currentHeight: currentHeight.height});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const getGender = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({gender: user.gender ?? ""});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateGender = async (req, res) => {
+    const { user: userID, gender } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        if (user.gender === gender) {
+            throw new BadRequestError(`Date of birth is already set to ${gender ?? "unset"}`);
+        }
+        
+        user.gender = gender;
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "Date of birth updated successfully", updatedGender: user.gender ?? "" });
+    }
+    catch (err) {
+        throw new BadRequestError(err);
+    }
+}
 
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
-    updateCurrentHeight};
+    updateCurrentHeight, getGender, updateGender};
