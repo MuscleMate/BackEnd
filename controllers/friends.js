@@ -106,7 +106,7 @@ const cancelFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
     const user = await User.findById(userID);
-    const userToCanceled = await User.findById(id);
+    const userToBeCanceled = await User.findById(id);
     if(!user)
     {
         throw new NotFoundError('User does not exist');
@@ -117,11 +117,11 @@ const cancelFriend = async(req,res) =>{
     }
     if(user.sentFriendsRequests.indexOf(userToBeCanceled._id)===-1)
     {
-        throw new NotFoundError('User did not send a request');
+        throw new NotFoundError('User did not send a friend request to that user');
     }
     try{
         await user.updateOne({ $pull: { sentFriendsRequests: userToBeCanceled._id} });
-        await userToBeCanceled.updateOne({ $pull: { recivedFriendsRequests: user._id} });
+        await userToBeCanceled.updateOne({ $pull: { receivedFriendsRequests: user._id} });
         res.status(StatusCodes.NO_CONTENT).json({});
     } catch(error){
         throw new BadRequestError(error.message);
