@@ -186,5 +186,5 @@ const deleteFriend = async(req,res) =>{
 }
 
 
-module.exports ={getFriends,addFriend, sendRequest, searchUser, cancelFriend,denyFriend};
+module.exports ={getFriends,addFriend, sendRequest, searchUser, cancelFriend,denyFriend, deleteFriend};
 
