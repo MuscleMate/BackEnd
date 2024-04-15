@@ -5,11 +5,11 @@ const { NotFoundError, BadRequestError } = require("../errors");
 
 const getFriends = async(req,res) => {
     try {
-        const user = await User.findById(req.body.user).populate({
-            path: 'friends',
-            path: 'receivedFriendsRequests',
-            path: 'sentFriendsRequests'
-        });;
+        const user = await User.findById(req.body.user).populate([
+            'friends',
+            'receivedFriendsRequests',
+            'sentFriendsRequests'
+        ]);;
         if (!user) {
             throw new NotFoundError('User not found');
         }
