@@ -89,7 +89,7 @@ const searchUser = async(req,res) =>{
     const { count } = req.query;
     
     try {
-        const users = await User.find(
+        let users = await User.find(
             {
                 $or: [
                     {firstName: {$regex: searchText, $options: 'i'}},
@@ -98,7 +98,11 @@ const searchUser = async(req,res) =>{
                 ]
             },
         ).select('_id firstName lastName email').limit(count);
-            
+
+        users = users.filter(user => {
+            return user._id.toString() !== req.body.user;
+        });
+
         res.status(StatusCodes.OK).json({users})
     } catch (err) {
         throw new BadRequestError(err.message);
