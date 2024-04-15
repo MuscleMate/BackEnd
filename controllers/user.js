@@ -257,5 +257,121 @@ const getWeightHistory = async (req, res) => {
 
 }
 
+const getFirstName = async (req, res) => {
+    const { user: userID } = req.body;
 
-module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, updateCurrentWeight, getWeightHistory };
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({firstName: user.firstName});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateFirstName = async (req, res) => {
+    const { user: userID } = req.body;
+    const { firstName } = req.body;
+
+    if (!firstName) {
+        throw new BadRequestError("First name is a required field, it cannot be empty");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.firstName = firstName;
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "First name updated successfully", updatedFirstName: user.firstName });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const getLastName = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({lastName: user.lastName ?? ""});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateLastName = async (req, res) => {
+    const { user: userID } = req.body;
+    const { lastName } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        if (!lastName) {
+            user.lastName = undefined;
+            await user.save();
+        } else {
+            user.lastName = lastName;
+            await user.save();
+        }
+
+        res.status(StatusCodes.OK).json({ msg: "Last name updated successfully", updatedLastName: user.lastName });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const getEmail = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({email: user.email});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateEmail = async (req, res) => {
+    const { user: userID } = req.body;
+    const { email } = req.body;
+
+    if (!email) {
+        throw new BadRequestError("Email is a required field, it cannot be empty");
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.email = email;
+        await user.validate();
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "Email updated successfully", updatedEmail: user.email });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+
+module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, getEmail, updateEmail};
