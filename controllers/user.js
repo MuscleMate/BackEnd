@@ -286,6 +286,10 @@ const updateFirstName = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
+        if (user.firstName === firstName) {
+            throw new BadRequestError(`First name is already set to ${firstName}`);
+        }
+
         user.firstName = firstName;
         await user.save();
 
@@ -314,19 +318,21 @@ const updateLastName = async (req, res) => {
     const { user: userID } = req.body;
     const { lastName } = req.body;
 
+    if (lastName === "") 
+        lastName = undefined;
+
     try {
         const user = await User.findById(userID);
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        if (!lastName) {
-            user.lastName = undefined;
-            await user.save();
-        } else {
-            user.lastName = lastName;
-            await user.save();
+        if (user.lastName === lastName) {
+            throw new BadRequestError(`Last name is already set to ${lastName ?? "unset"}`);
         }
+
+        user.lastName = lastName;
+        await user.save();
 
         res.status(StatusCodes.OK).json({ msg: "Last name updated successfully", updatedLastName: user.lastName });
     } catch (err) {
@@ -363,9 +369,17 @@ const updateEmail = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
+        if (user.email === email) {
+            throw new BadRequestError(`Email is already set to ${email}`);
+        }
+
         user.email = email;
         await user.validate();
-        await user.save();
+        await user.save().catch((err) => {
+            if (err.code === 11000) {
+                throw new BadRequestError(`Email ${email} is already taken`);
+            }
+        });
 
         res.status(StatusCodes.OK).json({ msg: "Email updated successfully", updatedEmail: user.email });
     } catch (err) {
@@ -373,5 +387,56 @@ const updateEmail = async (req, res) => {
     }
 }
 
+const getDateOfBirth = async (req, res) => {
+    const { user: userID } = req.body;
 
-module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, getEmail, updateEmail};
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        res.status(StatusCodes.OK).json({dateOfBirth: user.dateOfBirth ?? ""});
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+const updateDateOfBirth = async (req, res) => {
+    const { user: userID } = req.body;
+    let { dateOfBirth } = req.body;
+
+    if (dateOfBirth === "") 
+        dateOfBirth = undefined;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        if (user.dateOfBirth === dateOfBirth) {
+            throw new BadRequestError(`Date of birth is already set to ${dateOfBirth ?? "unset"}`);
+        }
+        
+        user.dateOfBirth = dateOfBirth;
+        await user.save();
+
+        res.status(StatusCodes.OK).json({ msg: "Date of birth updated successfully", updatedDateOfBirth: user.dateOfBirth ?? "" });
+    }
+    catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+ 
+const getHeightHistory = async (req, res) => {}
+ 
+const getCurrentHeight = async (req, res) => {}
+ 
+const updateCurrentHeight = async (req, res) => {}
+
+
+module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
+    updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
+    getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
+    updateCurrentHeight};
