@@ -762,8 +762,24 @@ const searchUser = async(req,res) =>{
     }
 }
 
+const getLevel = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+        
+        const level = user.RP;
+        res.status(StatusCodes.OK).json({ level });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
-    getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser};
+    getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel };
