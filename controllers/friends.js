@@ -32,6 +32,9 @@ const sendRequest = async(req,res) =>{
     {
         throw new NotFoundError('User to be added does not exist');
     }
+    if (user._id.toString() === userToBeAdded._id.toString()) {
+        throw new BadRequestError('You cannot send a friend request to yourself');
+    }
     if(user.friends.indexOf(userToBeAdded._id)!==-1)
     {
         throw new BadRequestError('User is already a friend');
