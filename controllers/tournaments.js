@@ -11,19 +11,21 @@ const getTournaments = async (req, res) => {
             populate: [
                 {
                     path: 'admins',
-                    model: 'User'
+                    model: 'User',
+                    select: '_id firstName lastName email RP.level'
                 },
                 {
                     path: 'contestants',
-                    model: 'User'
+                    model: 'User',
+                    select: '_id firstName lastName email RP.level'
                 }
             ]
-        });
+        })
 
         if (!user) {
             throw new NotFoundError('User not found');
         }
-        res.status(StatusCodes.OK).json({ tournaments: user.tournaments });
+        res.status(StatusCodes.OK).json({ count: user.tournaments.length, tournaments: user.tournaments });
 
     } catch (error) {
         throw new BadRequestError(error.message);
@@ -31,15 +33,21 @@ const getTournaments = async (req, res) => {
 };
 
 const createTournament = async (req, res) => {
+    const requiredFields = ['name', 'startDate', 'endDate', 'determinant'];
+
+    if (requiredFields.some(field => !req.body[field])) {
+        throw new BadRequestError(`Please provide all required fields: ${requiredFields.join(', ')}`);
+    }
+
+    req.body.admins = req.body.admins ? [...req.body.admins, req.body.user] : [req.body.user];
+    req.body.contestants = req.body.contestants ?? [];
+    req.body.admins = [...new Set(req.body.admins)];
+
     try {
         const user = await User.findById(req.body.user);
 
         if (!user) {
             throw new NotFoundError('User not found');
-        }
-
-        if (req.body.admins.indexOf(user._id.toString()) === -1) {
-            throw new BadRequestError('Admins array should contain the user creating the tournament');
         }
 
         const allUsersIDs = [...req.body.admins, ...req.body.contestants]
@@ -63,6 +71,28 @@ const createTournament = async (req, res) => {
             }
         });
 
+        tournament.admins.forEach(async (admin) => {
+            if (admin !== user._id) {
+                await sendNotification(user._id, admin, `You have been added as an admin to the tournament ${tournament.name}`);
+            } else {
+                await sendNotification(user._id, admin, `You have created the tournament ${tournament.name}`);
+            }
+        });
+
+        tournament.contestants.forEach(async (contestant) => {
+            await sendNotification(user._id, contestant, `You have been added as a contestant to the tournament ${tournament.name}`);
+        });
+
+        await tournament.populate([{
+            path: 'admins',
+            model: 'User',
+            select: '_id firstName lastName email RP.level'
+        }, {
+            path: 'contestants',
+            model: 'User',
+            select: '_id firstName lastName email RP.level'
+        }])
+
         res.status(StatusCodes.CREATED).json(tournament);
     } catch (error) {
         throw new BadRequestError(error.message);
@@ -70,19 +100,21 @@ const createTournament = async (req, res) => {
 }
 
 const updateTournament = async (req, res) => {
-    const { id } = req.params;
-    let { admins, contestants } = req.body;
+    const { tournamentID } = req.params;
+    let { admins, contestants, user: userId } = req.body;
+    req.body.admins = undefined;
+    req.body.contestants = undefined;
 
     if (Object.keys(req.body).length === 1) {
         throw new BadRequestError('Provide data to update');
     }
-    console.log(id)
-    const tournament = await Tournament.findById(id);
+
+    const tournament = await Tournament.findById(tournamentID);
     if (!tournament) {
-        throw new NotFoundError(`No tournament with id : ${id}`);
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
     }
 
-    const user = await User.findById(req.body.user);
+    const user = await User.findById(userId);
     if (tournament.admins.indexOf(user._id) === -1) {
         throw new UnauthorizedError('User not authorized to update this tournament');
     }
@@ -114,6 +146,9 @@ const updateTournament = async (req, res) => {
     }
 
     try {
+        await tournament.updateOne({ $pull: { admins: { $in: admins } } });
+        await tournament.updateOne({ $pull: { contestants: { $in: contestants } } });
+
         await tournament.updateOne(req.body)
     } catch (error) {
         throw new BadRequestError(error.message);
@@ -123,8 +158,8 @@ const updateTournament = async (req, res) => {
 }
 
 const updateTournamentRole = async (req, res) => {
-    const { id } = req.params;
-    const { user, role, userToBeChanged } = req.body;
+    const { tournamentID, userID: userToBeChanged } = req.params;
+    const { user, role } = req.body;
 
     if (!user || !role || !userToBeChanged) {
         throw new BadRequestError('Provide role and userToBeChanged');
@@ -134,9 +169,9 @@ const updateTournamentRole = async (req, res) => {
         throw new BadRequestError('Invalid role');
     }
 
-    const tournament = await Tournament.findById(id);
+    const tournament = await Tournament.findById(tournamentID);
     if (!tournament) {
-        throw new NotFoundError(`No tournament with id : ${id}`);
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
     }
 
     const admin = await User.findById(user);
@@ -151,7 +186,7 @@ const updateTournamentRole = async (req, res) => {
     if (!userToBeChangedDoc) {
         throw new NotFoundError(`No user found with id: ${userToBeChanged}`);
     }
-    console.log(userToBeChangedDoc.tournaments)
+
     if (userToBeChangedDoc.tournaments.indexOf(tournament._id) === -1) {
         throw new NotFoundError('User is not part of the tournament');
     }
@@ -176,8 +211,8 @@ const updateTournamentRole = async (req, res) => {
 }
 
 const addUsersToTournament = async (req, res) => {
-    const { id } = req.params;
-    const { user, role, userToBeAdded } = req.body;
+    const { tournamentID, userID: userToBeAdded } = req.params;
+    const { user, role } = req.body;
 
     if (!user || !role || !userToBeAdded) {
         throw new BadRequestError('Provide role and userToBeAdded fields');
@@ -187,9 +222,9 @@ const addUsersToTournament = async (req, res) => {
         throw new BadRequestError('Invalid role');
     }
 
-    const tournament = await Tournament.findById(id);
+    const tournament = await Tournament.findById(tournamentID);
     if (!tournament) {
-        throw new NotFoundError(`No tournament with id : ${id}`);
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
     }
 
     const admin = await User.findById(user);
@@ -227,19 +262,31 @@ const addUsersToTournament = async (req, res) => {
 }
 
 const getSingleTournament = async (req, res) => {
-    const { id } = req.params;
+    const { tournamentID } = req.params;
     const { user: userID } = req.body;
     const user = await User.findById(userID);
     if (!user) {
         throw new NotFoundError('User does not exist');
     }
-    const tournament = await Tournament.findById(id);
+    const tournament = await Tournament.findById(tournamentID)
     if (!tournament) {
-        throw new NotFoundError(`No tournament with id : ${id}`);
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
     }
     if (tournament.contestants.indexOf(userID) === -1 && tournament.admins.indexOf(userID) === -1) {
         throw new UnauthorizedError('User not authorized to get info about this tournament');
     }
+    await tournament.populate([
+        {
+            path: 'admins',
+            model: 'User',
+            select: '_id firstName lastName email RP.level'
+        },
+        {
+            path: 'contestants',
+            model: 'User',
+            select: '_id firstName lastName email RP.level'
+        }
+    ]);
     try {
         res.status(StatusCodes.OK).json({ tournament });
     }
@@ -249,16 +296,16 @@ const getSingleTournament = async (req, res) => {
 }
 
 const deleteTournament = async (req, res) => {
-    const { id } = req.params;
+    const { tournamentID } = req.params;
     const { user: userID } = req.body;
     const user = await User.findById(userID);
     if (!user) {
         throw new NotFoundError('User does not exist');
     }
 
-    const tournament = await Tournament.findById(id);
+    const tournament = await Tournament.findById(tournamentID);
     if (!tournament) {
-        throw new NotFoundError(`No tournament with id : ${id}`);
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
     }
 
     if (tournament.admins.indexOf(userID) === -1) {
@@ -282,6 +329,48 @@ const deleteTournament = async (req, res) => {
     }
 }
 
+const deleteUserFromTournament = async (req, res) => {
+    const { tournamentID, userID: userToBeDeleted } = req.params;
+    const { user: userID} = req.body;
+
+    const user = await User.findById(userID);
+    if (!user) {
+        throw new NotFoundError('User does not exist');
+    }
+
+    const userTBD = await User.findById(userToBeDeleted);
+    if (!userToBeDeleted) {
+        throw new NotFoundError('User to be deleted does not exist');
+    }
+
+    const tournament = await Tournament.findById(tournamentID);
+    if (!tournament) {
+        throw new NotFoundError(`No tournament with id : ${tournamentID}`);
+    }
+
+    if (tournament.admins.indexOf(userID) === -1) {
+        throw new UnauthorizedError('User not authorized to delete this tournament');
+    }
+
+    if (tournament.admins.indexOf(userToBeDeleted) === -1 && tournament.contestants.indexOf(userToBeDeleted) === -1) {
+        throw new NotFoundError('User is not part of the tournament');
+    }
+
+    try {
+        if (tournament.admins.indexOf(userToBeDeleted) !== -1) {
+            await tournament.updateOne({ $pull: { admins: userToBeDeleted } });
+        }
+        if (tournament.contestants.indexOf(userToBeDeleted) !== -1) {
+            await tournament.updateOne({ $pull: { contestants: userToBeDeleted } });
+        }
+        await userTBD.updateOne({ $pull: { tournaments: tournament._id } });
+        res.status(StatusCodes.OK).json({ msg: "User deleted from tournament" });
+    }
+    catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
 
 module.exports = {
     getTournaments,
@@ -290,5 +379,6 @@ module.exports = {
     updateTournamentRole,
     addUsersToTournament,
     getSingleTournament,
-    deleteTournament
+    deleteTournament, 
+    deleteUserFromTournament
 };
