@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/User");
 const { NotFoundError, BadRequestError } = require("../errors");
+const sendNotification = require("../utils/sendNotification");
 
 
 const getFriends = async(req,res) => {
@@ -49,6 +50,7 @@ const sendRequest = async(req,res) =>{
     try{
         await userToBeAdded.updateOne({ $push: { receivedFriendsRequests: user._id} });
         await user.updateOne({ $push: { sentFriendsRequests: userToBeAdded._id} });
+        await sendNotification(user._id, [userToBeAdded._id], `${user.firstName} sent you a friend request`);
         res.status(StatusCodes.NO_CONTENT).json({});
     }catch(error){
         throw new BadRequestError(error.message);
@@ -77,6 +79,7 @@ const addFriend = async(req,res) =>{
         await user.updateOne({ $push: { friends: userToBeAdded._id} });
         await user.updateOne({ $pull: { receivedFriendsRequests: userToBeAdded._id} });
         await userToBeAdded.updateOne({ $pull: { sentFriendsRequests: user._id} });
+        await sendNotification(user._id, [userToBeAdded._id], `${user.firstName} accepted your friend request`);
         res.status(StatusCodes.NO_CONTENT).json({});
     } catch(error){
         throw new BadRequestError(error.message);
