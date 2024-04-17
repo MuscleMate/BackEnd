@@ -166,7 +166,7 @@ const forgot_password = async (req,res) => {
 
   const token = await Token.create({ token: tokenValue, user: user._id, expireAt: earlierDate });
   const link = `${process.env.PROTO}://${process.env.BASE_URL}:${process.env.PORT}/auth/password/forgot/${tokenValue}`;
-  sendEmail(email, 'Zmiana hasła', link);
+  await sendEmail(email, 'Zmiana hasła', link);
 
   res.status(StatusCodes.OK).json({ message: "Reset link was sent to email" });
 }
