@@ -13,7 +13,20 @@ const sendEmail= require("../utils/sendEmail");
  * @cookies jwt
  */
 const register = async (req, res) => {
-  const { email, firstName, password } = req.body;
+  const { email, firstName, password, weight, height, suplements } = req.body;
+  req.body.weightHistory = weight && { weight: weight }
+  req.body.heightHistory = height && { height: height }
+  req.body.suplements = suplements && {
+    name: suplements.name,
+    status: suplements.status,
+    history: [
+      {
+        dose: suplements.dose,
+        frequency: suplements.frequency,
+        frequencyUnit: suplements.frequencyUnit
+      }
+    ]
+  }
 
   if (!email || !password || !firstName) {
     throw new BadRequestError("Please provide email, firstName and password");
@@ -101,15 +114,15 @@ const logout = async (req, res) => {
  * @response password change message
  * @cookies jwt
  */
-const reset_password = async (req,res)=>{
-  const { user, password} = req.body;
+const reset_password = async (req, res) => {
+  const { user, password } = req.body;
 
   if (!password) {
     throw new BadRequestError("Please provide new password");
   }
 
   const userRet = await User.findById(user);
-  if (!userRet){
+  if (!userRet) {
     throw new BadRequestError("User not found");
   }
 

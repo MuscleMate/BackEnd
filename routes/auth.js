@@ -12,4 +12,5 @@ router.route("/password/reset").put(requireAuth, reset_password);
 router.route("/password/forgot").post(forgot_password)
 router.route("/password/forgot/:token").post(forgot_password_reset)
 
+
 module.exports = router;

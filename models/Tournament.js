@@ -23,7 +23,6 @@ const TournamentSchema = new mongoose.Schema({
   admins: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-
   }],
   contestants: [
     {
