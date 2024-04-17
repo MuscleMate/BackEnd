@@ -23,6 +23,16 @@ const WorkoutSchema = new mongoose.Schema({
     type: Date,
     required: [true, "Please provide date"],
   },
+  startTime: {
+    type: Date,
+  },
+  endTime: {
+    type: Date,
+  },
+  ongoing: {
+    type: Boolean,
+    default: false,
+  },
   exercises: [
     {
       type: mongoose.Schema.Types.ObjectId,
