@@ -70,9 +70,8 @@ const createTournament = async (req, res) => {
                 await user.updateOne({ $push: { tournaments: tournament._id } });
             }
         });
-
         tournament.admins.forEach(async (admin) => {
-            if (admin !== user._id) {
+            if (admin._id.toString() !== user._id.toString()) {
                 await sendNotification(user._id, admin, `You have been added as an admin to the tournament ${tournament.name}`);
             } else {
                 await sendNotification(user._id, admin, `You have created the tournament ${tournament.name}`);

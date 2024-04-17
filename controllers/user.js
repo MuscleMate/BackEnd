@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Workout = require("../models/Workout");
 const Tournament = require("../models/Tournament");
 const increaseRP = require("../utils/increaseRP");
+const { default: mongoose } = require("mongoose");
 
 const getUser = async (req, res) => {
     const { id } = req.params;
@@ -16,33 +17,47 @@ const getUser = async (req, res) => {
         }
 
         const getUser = await User.findById(id)
-            .populate("friends")
+            .populate({
+                path: "friends",
+                select: ["firstName", "lastName", "email", "_id", "RP"]
+            })
             .populate("workouts")
             .populate("tournaments")
-            .populate("receivedFriendsRequests")
-            .populate("sentFriendsRequests")
+            .populate({
+                path: "receivedFriendsRequests",
+                select: ["firstName", "lastName", "email", "_id", "RP"]
+            })
+            .populate({
+                path: "sentFriendsRequests",
+                select: ["firstName", "lastName", "email", "_id", "RP"]
+            })
             .select(["-password", "-notifications"]);
         if (!getUser) {
             throw new NotFoundError(`User your are looking for does not exist`);
         }
 
         var fieldsToDelete = [];
-
         if (userID === id) {
             fieldsToDelete = [];
-        } else if (getUser.friends.includes(userID)) {
-            fieldsToDelete = ["receivedFriendsRequests", "sentFriendsRequests"];
+        } else if (getUser.friends.find((friend) => friend._id.toString() === userID)) {
+            fieldsToDelete = [
+                "measurements",
+                "suplements",
+                "receivedFriendsRequests", 
+                "sentFriendsRequests"];
         } else {
             fieldsToDelete = [
                 "dateOfBirth",
-                "height",
-                "weight",
+                "heightHistory",
+                "weightHistory",
                 "gender",
                 "friends",
                 "workouts",
                 "tournaments",
                 "receivedFriendsRequests",
                 "sentFriendsRequests",
+                "suplements",
+                "measurements"
             ];
         }
 
@@ -50,7 +65,7 @@ const getUser = async (req, res) => {
         fieldsToDelete.forEach((field) => {
             delete responseData[field];
         });
-        console.log(responseData);
+
         responseData.workouts?.filter(
             (workout) =>
                 workout.company.includes(user) ||
@@ -77,7 +92,7 @@ const getCurrentUser = async (req, res) => {
             .populate("tournaments")
             .populate("receivedFriendsRequests")
             .populate("sentFriendsRequests")
-            .select(["-password", "-notifications"]);
+            .select(["-password"]);
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
@@ -95,7 +110,6 @@ const updateUser = async (req, res) => {
     const allowedUpdates = [
         "email",
         "dateOfBirth",
-        "height",
         "firstName",
         "lastName",
         "gender",
@@ -129,13 +143,13 @@ const deleteUser = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        for (let i = 0; i < user.friends.length; i++) {
+        for (let i = 0; i < user.friends?.length; i++) {
             const friend = await User.findById(user.friends[i]);
             friend.friends = friend.friends.filter((friend) => friend.toString() !== userID);
             await friend.save();
         }
 
-        for (let i = 0; i < user.receivedFriendsRequests.length; i++) {
+        for (let i = 0; i < user.receivedFriendsRequests?.length; i++) {
             const friend = await User.findById(user.receivedFriendsRequests[i]);
             friend.sentFriendsRequests = friend.sentFriendsRequests.filter(
                 (friend) => friend.toString() !== userID
@@ -164,16 +178,17 @@ const deleteUser = async (req, res) => {
 
         for (let i = 0; i < user.tournaments.length; i++) {
             const tournament = await Tournament.findById(user.tournaments[i]);
-            if (tournament.participants.length === 1 && tournament.participants[0].toString() === userID) {
+            if (tournament.contestants.length === 1 && tournament.contestants[0].toString() === userID) {
                 await tournament.deleteOne();
             }
             else {
-                tournament.participants = tournament.participants.filter(
+                tournament.contestants = tournament.contestants.filter(
                     (participant) => participant.toString() !== userID
                 );
                 await tournament.save();
             }
         }
+        console.log(6)
 
         await user.deleteOne();
         res.status(StatusCodes.OK).json({ message: "User deleted successfully" });
@@ -605,7 +620,7 @@ const addSuplement = async (req, res) => {
         user.suplements.push({ name, status, history: [{ dose, frequency, frequencyUnit }] });
         await user.save();
 
-        res.status(StatusCodes.CREATED).json({ msg: "Suplement added successfully", addedSuplement: user.suplements[user.suplements.length - 1]});
+        res.status(StatusCodes.CREATED).json({ addedSuplement: user.suplements[user.suplements.length - 1]});
     } catch (err) {
         throw new BadRequestError(err);
     }
