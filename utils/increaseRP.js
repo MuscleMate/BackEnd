@@ -28,9 +28,11 @@ const increaseRP = async (userID, action) => {
     let currentLevel = user.RP.level;
     let currentPoints = user.RP.levelPoints;
     let currentPointsMax = user.RP.levelPointsMax;
+    let totalPoints = user.RP.totalPoints;
 
     const levelMultiplier = 1 + (currentLevel - 1) * 2;
     currentPoints += rpAmountEnum[action] * levelMultiplier;
+    totalPoints += rpAmountEnum[action] * levelMultiplier;
     if (currentPoints >= currentPointsMax) {
         currentLevel++;
         currentPoints -= currentPointsMax;

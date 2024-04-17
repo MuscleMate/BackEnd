@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const { getFriends,sendRequest, addFriend, denyFriend, deleteFriend, cancelFriend, getReceivedRequests, getSentRequests } = require("../controllers/friends.js");
+const { getFriends,sendRequest, addFriend, denyFriend, deleteFriend, cancelFriend, getReceivedRequests, getSentRequests,
+getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking } = require("../controllers/friends.js");
 
 router.route("/").get(getFriends);
+router.route("/rankings/level").get(getLevelRanking);
+router.route("/rankings/exp").get(getExpRanking);
+router.route("/rankings/challenges").get(getChallengesRanking);
+router.route("/rankings/workouts").get(getWorkoutsRanking);
+router.route("/rankings/tournaments").get(getTournamentsRanking);
 router.route("/delete").delete(deleteFriend);
 router.route("/request/received").get(getReceivedRequests);
 router.route("/request/sent").get(getSentRequests);

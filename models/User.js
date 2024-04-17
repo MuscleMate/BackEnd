@@ -75,6 +75,33 @@ const UserSchema = new mongoose.Schema({
       type: Number,
       min: 0,
       default: 100,
+    },
+    totalPoints: {
+      type: Number,
+      min: 0,
+      default: 0,
+    }
+  },
+  stats: {
+    tournamentsAttended: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    tournamentsWon: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    challengesCompleted: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    workoutsCompleted: {
+      type: Number,
+      min: 0,
+      default: 0,
     }
   },
   friends: [

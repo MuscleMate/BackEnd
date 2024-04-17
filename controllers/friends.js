@@ -198,5 +198,94 @@ const getSentRequests = async (req, res) => {
     } 
 }
 
-module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend, getReceivedRequests, getSentRequests};
+const getLevelRanking = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "_id", "RP"]
+        })
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        let ranking = [...user.friends, {_id: userID, RP: user.RP, firstName: user.firstName, lastName: user.lastName}]
+
+        ranking = ranking.sort((a, b) => b.RP.level - a.RP.level);
+        res.status(StatusCodes.OK).json({ ranking });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
+const getExpRanking = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "_id", "RP"]
+        })
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        let ranking = [...user.friends, {_id: userID, RP: user.RP, firstName: user.firstName, lastName: user.lastName}]
+
+        ranking = ranking.sort((a, b) => b.RP.totalPoints - a.RP.totalPoints);
+        res.status(StatusCodes.OK).json({ ranking });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
+const getChallengesRanking = async (req, res) => {
+    // TODO
+}
+
+const getWorkoutsRanking = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "_id", "RP", "stats"]
+        })
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        let ranking = [...user.friends, {_id: userID, RP: user.RP, firstName: user.firstName, lastName: user.lastName}]
+
+        ranking = ranking.sort((a, b) => b.stats.workoutsCompleted - a.stats.workoutsCompleted);
+        res.status(StatusCodes.OK).json({ ranking });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
+const getTournamentsRanking = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "_id", "RP", "stats"]
+        })
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        let ranking = [...user.friends, {_id: userID, RP: user.RP, firstName: user.firstName, lastName: user.lastName}]
+
+        ranking = ranking.sort((a, b) => b.stats.tournamentsWon - a.stats.tournamentsWon);
+        res.status(StatusCodes.OK).json({ ranking });
+    } catch (error) {
+        throw new BadRequestError(error.message);
+    }
+}
+
+module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend, getReceivedRequests, getSentRequests, 
+    getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking};
 
