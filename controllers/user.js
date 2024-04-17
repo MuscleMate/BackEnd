@@ -4,7 +4,6 @@ const User = require("../models/User");
 const Workout = require("../models/Workout");
 const Tournament = require("../models/Tournament");
 const increaseRP = require("../utils/increaseRP");
-const { default: mongoose } = require("mongoose");
 
 const getUser = async (req, res) => {
     const { id } = req.params;
