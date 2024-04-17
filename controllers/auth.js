@@ -5,6 +5,7 @@ const { createJWT, attachCookies, isJWTValid } = require("../utils/JWT");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
 const jwt = require("jsonwebtoken");
 const sendEmail= require("../utils/sendEmail");
+const { resetPasswordTemplate } = require("../utils/emailTemaplates");
 
 /** Registers a new user
  * @url POST /auth/register
@@ -166,7 +167,7 @@ const forgot_password = async (req,res) => {
 
   const token = await Token.create({ token: tokenValue, user: user._id, expireAt: earlierDate });
   const link = `${process.env.PROTO}://${process.env.BASE_URL}:${process.env.PORT}/auth/password/forgot/${tokenValue}`;
-  await sendEmail(email, 'Zmiana hasła', link);
+  await sendEmail(email, 'Zmiana hasła', resetPasswordTemplate(user.firstName, link));
 
   res.status(StatusCodes.OK).json({ message: "Reset link was sent to email" });
 }
