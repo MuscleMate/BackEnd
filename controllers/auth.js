@@ -152,7 +152,7 @@ const forgot_password = async (req,res) => {
   const earlierDate = new Date(currentDate.getTime() - (71 * 60 * 60 * 1000)); // Date 2 days and 23h eariler
 
   const token = await Token.create({ token: tokenValue, user: user._id, expireAt: earlierDate });
-  const link = `${process.env.PROTO}://${process.env.BASE_URL}:${process.env.PORT}/auth/forgot-password-reset/${tokenValue}`;
+  const link = `${process.env.PROTO}://${process.env.BASE_URL}:${process.env.PORT}/auth/password/forgot/${tokenValue}`;
   sendEmail(email, 'Zmiana hasła', link);
 
   res.status(StatusCodes.OK).json({ message: "Reset link was sent to email" });
