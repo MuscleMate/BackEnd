@@ -32,4 +32,4 @@ const isJWTValid = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 
-module.exports = { createJWT, isJWTValid, attachCookies };
+module.exports = { createJWT, isJWTValid, attachCookies, maxAge };
