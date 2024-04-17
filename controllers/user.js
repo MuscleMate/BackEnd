@@ -5,6 +5,12 @@ const Workout = require("../models/Workout");
 const Tournament = require("../models/Tournament");
 const increaseRP = require("../utils/increaseRP");
 
+/** Get user by id
+ * @url GET /user/:id
+ * @param id The user id
+ * @response user object, amount of information depends on the user's 
+ * relationship with the user who is requesting the data
+ */
 const getUser = async (req, res) => {
     const { id } = req.params;
     const { user: userID } = req.body;
@@ -78,9 +84,12 @@ const getUser = async (req, res) => {
     }
 };
 
+/** Get current user
+ * @url GET /user
+ * @response user object
+ */
 const getCurrentUser = async (req, res) => {
     const { user: userID } = req.body;
-
 
     try {
         await increaseRP(userID, "workout");
@@ -102,6 +111,11 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
+/** Update user
+ * @url PUT /user
+ * @body user, email, dateOfBirth, firstName, lastName, gender
+ * @response updated user object
+ */
 const updateUser = async (req, res) => {
     const { user: userID } = req.body;
     const updates = Object.keys(req.body);
@@ -133,6 +147,11 @@ const updateUser = async (req, res) => {
     }
 };
 
+/** Delete user
+ * @url DELETE /user
+ * @body user
+ * @response message
+ */
 const deleteUser = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -187,7 +206,6 @@ const deleteUser = async (req, res) => {
                 await tournament.save();
             }
         }
-        console.log(6)
 
         await user.deleteOne();
         res.status(StatusCodes.OK).json({ message: "User deleted successfully" });
@@ -196,6 +214,11 @@ const deleteUser = async (req, res) => {
     }
 }
 
+/** Get user's notifications
+ * @url GET /user/notifications
+ * @query count - number of notifications to return
+ * @response notifications
+ */
 const getNotifications = async (req, res) => {
     const { user: userID } = req.body;
     const { count } = req.query;
@@ -214,6 +237,10 @@ const getNotifications = async (req, res) => {
     }
 }
 
+/** Get user's weight
+ * @url GET /user/weight
+ * @response currentWeight
+ */
 const getCurrentWeight = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -236,6 +263,12 @@ const getCurrentWeight = async (req, res) => {
     }
 }
 
+/** Update user's weight
+ * @url PUT /user/weight
+ * @body user, weight
+ * @response updatedWeight
+ * @description Adds a new weight to the user's weight history
+ */
 const updateCurrentWeight = async (req, res) => {
     const { user: userID } = req.body;
     const { weight } = req.body;
@@ -259,6 +292,10 @@ const updateCurrentWeight = async (req, res) => {
     }
 }
 
+/** Get user's weight history
+ * @url GET /user/weight/history
+ * @response weightHistory
+ */
 const getWeightHistory = async (req, res) => { 
     const { user: userID } = req.body;
 
@@ -275,6 +312,10 @@ const getWeightHistory = async (req, res) => {
 
 }
 
+/** Get user's first name
+ * @url GET /user/firstName
+ * @response firstName
+ */
 const getFirstName = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -290,6 +331,11 @@ const getFirstName = async (req, res) => {
     }
 }
 
+/** Update user's first name
+ * @url PUT /user/firstName
+ * @body user, firstName
+ * @response updatedFirstName
+ */
 const updateFirstName = async (req, res) => {
     const { user: userID } = req.body;
     const { firstName } = req.body;
@@ -317,6 +363,10 @@ const updateFirstName = async (req, res) => {
     }
 }
 
+/** Get user's last name
+ * @url GET /user/lastName
+ * @response lastName
+ */
 const getLastName = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -332,6 +382,11 @@ const getLastName = async (req, res) => {
     }
 }
 
+/** Update user's last name
+ * @url PUT /user/lastName
+ * @body user, lastName
+ * @response updatedLastName
+ */
 const updateLastName = async (req, res) => {
     const { user: userID } = req.body;
     const { lastName } = req.body;
@@ -358,6 +413,10 @@ const updateLastName = async (req, res) => {
     }
 }
 
+/** Get user's email
+ * @url GET /user/email
+ * @response email
+ */
 const getEmail = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -373,6 +432,11 @@ const getEmail = async (req, res) => {
     }
 }
 
+/** Update user's email
+ * @url PUT /user/email
+ * @body user, email
+ * @response updatedEmail
+ */
 const updateEmail = async (req, res) => {
     const { user: userID } = req.body;
     const { email } = req.body;
@@ -405,6 +469,10 @@ const updateEmail = async (req, res) => {
     }
 }
 
+/** Get user's date of birth
+ * @url GET /user/dateOfBirth
+ * @response dateOfBirth
+ */
 const getDateOfBirth = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -420,6 +488,11 @@ const getDateOfBirth = async (req, res) => {
     }
 }
 
+/** Update user's date of birth
+ * @url PUT /user/dateOfBirth
+ * @body user, dateOfBirth
+ * @response updatedDateOfBirth
+ */
 const updateDateOfBirth = async (req, res) => {
     const { user: userID } = req.body;
     let { dateOfBirth } = req.body;
@@ -442,7 +515,11 @@ const updateDateOfBirth = async (req, res) => {
         throw new BadRequestError(err);
     }
 }
- 
+
+/** Get user's height history
+ * @url GET /user/height/history
+ * @response heightHistory - list of heights with dates
+ */
 const getHeightHistory = async (req, res) => {
     const { user: userID } = req.body;
  
@@ -457,7 +534,13 @@ const getHeightHistory = async (req, res) => {
         throw new BadRequestError(err);
     }
 }
- 
+
+/** Update user's current height
+ * @url PUT /user/height
+ * @body user, height
+ * @response updatedHeight
+ * @description Adds a new height to the user's height history
+ */
 const updateCurrentHeight = async (req, res) => {
     const { user: userID } = req.body;
     const { height } = req.body;
@@ -480,7 +563,11 @@ const updateCurrentHeight = async (req, res) => {
         throw new BadRequestError(err);
     }
 }
- 
+
+/** Get user's current height
+ * @url GET /user/height
+ * @response currentHeight
+ */
 const getCurrentHeight = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -503,6 +590,10 @@ const getCurrentHeight = async (req, res) => {
     }
 }
 
+/** Get user's gender
+ * @url GET /user/gender
+ * @response user's gender
+ */
 const getGender = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -518,6 +609,10 @@ const getGender = async (req, res) => {
     }
 }
 
+/** Update user's gender
+ * @url PUT /user/gender
+ * @response updatedGender
+ */
 const updateGender = async (req, res) => {
     const { user: userID, gender } = req.body;
 
@@ -542,7 +637,8 @@ const updateGender = async (req, res) => {
 }
 
 /** Get all suplements of the user with current dose
- * @return {Object} suplements
+ * @url GET /user/suplement/all
+ * @response suplements
  */
 const getAllSuplements = async (req, res) => {
     const { user: userID } = req.body;
@@ -562,8 +658,9 @@ const getAllSuplements = async (req, res) => {
 }
 
 /** Get suplement of the user with current dose
- * @query name
- * @return {Object} suplement 
+ * @url GET /user/suplement
+ * @query name - name of the suplement
+ * @response suplement 
  */
 const getSuplement = async (req, res) => {
     const { user: userID } = req.body;
@@ -595,8 +692,9 @@ const getSuplement = async (req, res) => {
 }
 
 /** Add a new suplement to the user
+ * @url POST /user/suplement
  * @body name, status, dose, frequency, frequencyUnit
- * @return {Object} addedSuplement
+ * @response addedSuplement
  */
 const addSuplement = async (req, res) => {
     const { user: userID, name, status, dose, frequency, frequencyUnit } = req.body;
@@ -626,8 +724,9 @@ const addSuplement = async (req, res) => {
 }
 
 /** Get suplement with history of dosing
- * @query name
- * @return {Object} suplement
+ * @url GET /user/suplement/dose/history
+ * @query name - name of the suplement
+ * @response {Object} suplement
  */
 const getSuplementHistory = async (req, res) => {
     const { user: userID } = req.body;
@@ -655,8 +754,9 @@ const getSuplementHistory = async (req, res) => {
 }
 
 /** Update dose of a suplement
+ * @url PUT /user/suplement/dose
  * @body name, dose, frequency, frequencyUnit
- * @return {Object} updatedSuplement
+ * @response updatedSuplement
  */
 const updateSuplementDose = async (req, res) => {
    const { user: userID, name, dose, frequency, frequencyUnit } = req.body;
@@ -689,6 +789,11 @@ const updateSuplementDose = async (req, res) => {
     }
 }
 
+/** Update name of a suplement
+ * @url PUT /user/suplement/name
+ * @body name, newName
+ * @response updatedSuplement
+ */
 const updateSuplementName = async (req, res) => {
     const { user: userID, name, newName } = req.body;
 
@@ -720,6 +825,11 @@ const updateSuplementName = async (req, res) => {
     }
 }
 
+/** Update status of a suplement
+ * @url PUT /user/suplement/status
+ * @body name, status
+ * @response updatedSuplement
+ */
 const updateSuplementStatus = async (req, res) => {
     const { user: userID, name, status } = req.body;
 
@@ -751,6 +861,12 @@ const updateSuplementStatus = async (req, res) => {
     }
 }
 
+/** Searches for users by first name, last name or email
+ * @url POST /user/search
+ * @body searchText
+ * @query count - number of users to return
+ * @response users
+ */
 const searchUser = async(req,res) =>{
     const { searchText } = req.body;
     const { count } = req.query;
@@ -776,6 +892,10 @@ const searchUser = async(req,res) =>{
     }
 }
 
+/** Get user's level
+ * @url GET /user/level
+ * @response level
+ */
 const getLevel = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -792,6 +912,11 @@ const getLevel = async (req, res) => {
     }
 }
 
+/** Get measuremet history of the user
+ * @url GET /user/measurements
+ * @query type - type of the measurement (optional)
+ * @response measurements - list of measurements with the history of the measurements
+ */
 const getMeasurementHistory = async (req, res) => {
     const { user: userID } = req.body;
     const { type } = req.query;
@@ -813,6 +938,11 @@ const getMeasurementHistory = async (req, res) => {
     }
 }
 
+/** Get measurements of the user
+ * @url GET /user/measurements
+ * @query type - type of the measurement (optional)
+ * @response measurements - list of measurements with the current size
+ */
 const getMeasurements = async (req, res) => {
     const { user: userID } = req.body;
     const { type } = req.query;
@@ -836,6 +966,11 @@ const getMeasurements = async (req, res) => {
     }
 }
 
+/** Add a new measurement to the user
+ * @url POST /user/measurements
+ * @body name, size
+ * @response updatedMeasurement
+ */
 const addMeasurement = async (req, res) => {
     const { user: userID, name, size } = req.body;
 
@@ -864,6 +999,12 @@ const addMeasurement = async (req, res) => {
     }
 }
 
+/** Update measurement
+ * @url PUT /user/measurements
+ * @body name, newName, newSize, measurementID
+ * @response updatedMeasurement
+ * @description Requires either newName or newSize, if newSize is provided measurementID is required
+ */
 const updateMeasurement = async (req, res) => {
     const { user: userID, name, measurementID, newName, newSize } = req.body;
 
@@ -919,6 +1060,12 @@ const updateMeasurement = async (req, res) => {
     }
 }
 
+/** Delete measurement
+ * @url DELETE /user/measurements
+ * @body name, measurementID
+ * @response message
+ * @description Deletes the measurement with the given id of measurement name
+ */
 const deleteMeasurement = async (req, res) => {
     const { user: userID, name, measurementID } = req.body;
 
