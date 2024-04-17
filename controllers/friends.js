@@ -3,7 +3,11 @@ const User = require("../models/User");
 const { NotFoundError, BadRequestError } = require("../errors");
 const sendNotification = require("../utils/sendNotification");
 
-
+/** Get friends of a user
+ * @url GET /friends
+ * @body user - the user id
+ * @response friends - array of friends
+ */
 const getFriends = async(req,res) => {
     try {
         const user = await User.findById(req.body.user).populate({
@@ -19,6 +23,13 @@ const getFriends = async(req,res) => {
         throw new BadRequestError(error.message);
     } 
 }
+
+/** Send a friend request
+ * @url POST /friends/request/send
+ * @body id - the id of the user to send the request to
+ * @body user - the id of the user sending the request
+ * @response 204 - No content
+ */
 const sendRequest = async(req,res) =>{
     const {id} = req.body;
     const { user:userID } = req.body;
@@ -57,6 +68,12 @@ const sendRequest = async(req,res) =>{
     }
 }
 
+/** Accept a friend request
+ * @url POST /friends/request/accept
+ * @body id - the id of the user to accept the request from
+ * @body user - the id of the user accepting the request
+ * @response 204 - No content
+ */
 const addFriend = async(req,res) =>{
     const {id} = req.body;
     const { user:userID } = req.body;
@@ -86,6 +103,12 @@ const addFriend = async(req,res) =>{
     }
 }
 
+/** Cancel a friend request
+ * @url POST /friends/request/cancel
+ * @body id - the id of the user to cancel the request to
+ * @body user - the id of the user canceling the request
+ * @response 204 - No content
+ */
 const cancelFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
@@ -112,6 +135,12 @@ const cancelFriend = async(req,res) =>{
     }
 }
 
+/** Delete a friend
+ * @url POST /friends/delete
+ * @body id - the id of the user to delete from friends
+ * @body user - the id of the user deleting the friend
+ * @response 204 - No content
+ */
 const deleteFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
@@ -139,8 +168,14 @@ const deleteFriend = async(req,res) =>{
         throw new BadRequestError(error.message);
     }
 }
-  
-  const denyFriend = async(req,res) =>{
+
+/** Deny a friend request
+ * @url POST /friends/request/deny
+ * @body id - the id of the user to deny the request from
+ * @body user - the id of the user denying the request
+ * @response 204 - No content
+ */
+const denyFriend = async(req,res) =>{
     const{id} = req.body;
     const { user:userID } = req.body;
     const user = await User.findById(userID);
@@ -166,6 +201,11 @@ const deleteFriend = async(req,res) =>{
     }
 }
 
+/** Get received friend requests
+ * @url GET /friends/request/received
+ * @body user - the id of the user
+ * @response receivedFriendsRequests - array of received friend requests
+ */
 const getReceivedRequests = async (req, res) => {
     try {
         const user = await User.findById(req.body.user).populate({
@@ -182,6 +222,11 @@ const getReceivedRequests = async (req, res) => {
     } 
 }
 
+/** Get sent friend requests
+ * @url GET /friends/request/sent
+ * @body user - the id of the user
+ * @response sentFriendsRequests - array of sent friend requests
+ */
 const getSentRequests = async (req, res) => {
     try {
         const user = await User.findById(req.body.user).populate({
@@ -198,6 +243,11 @@ const getSentRequests = async (req, res) => {
     } 
 }
 
+/** Get level ranking
+ * @url GET /friends/rankings/level
+ * @body user - the id of the user
+ * @response ranking - array of friends and user sorted by level
+ */
 const getLevelRanking = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -219,6 +269,11 @@ const getLevelRanking = async (req, res) => {
     }
 }
 
+/** Get experience ranking
+ * @url GET /friends/rankings/exp
+ * @body user - the id of the user
+ * @response ranking - array of friends and user sorted by experience
+ */
 const getExpRanking = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -240,10 +295,22 @@ const getExpRanking = async (req, res) => {
     }
 }
 
+/** Get challenges ranking
+ * @url GET /friends/rankings/challenges
+ * @body user - the id of the user
+ * @response ranking - array of friends and user sorted by challenges won
+ * @deprecated Not implemented
+ */
 const getChallengesRanking = async (req, res) => {
-    // TODO
+    // TODO: delete deprecated tag from JSDoc when implemented
+    res.status(StatusCodes.NOT_IMPLEMENTED).json({ message: "Not implemented" });
 }
 
+/** Get workouts ranking
+ * @url GET /friends/rankings/workouts
+ * @body user - the id of the user
+ * @response ranking - array of friends and user sorted by workouts completed
+ */
 const getWorkoutsRanking = async (req, res) => {
     const { user: userID } = req.body;
 
@@ -265,6 +332,11 @@ const getWorkoutsRanking = async (req, res) => {
     }
 }
 
+/** Get tournaments ranking
+ * @url GET /friends/rankings/tournaments
+ * @body user - the id of the user
+ * @response ranking - array of friends and user sorted by tournaments won
+ */
 const getTournamentsRanking = async (req, res) => {
     const { user: userID } = req.body;
 
