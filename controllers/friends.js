@@ -5,7 +5,10 @@ const { NotFoundError, BadRequestError } = require("../errors");
 
 const getFriends = async(req,res) => {
     try {
-        const user = await User.findById(req.body.user).populate('friends');
+        const user = await User.findById(req.body.user).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "email", "_id", "RP"]
+        });
         if (!user) {
             throw new NotFoundError('User not found');
         }
@@ -162,7 +165,10 @@ const deleteFriend = async(req,res) =>{
 
 const getReceivedRequests = async (req, res) => {
     try {
-        const user = await User.findById(req.body.user).populate('receivedFriendsRequests');
+        const user = await User.findById(req.body.user).populate({
+            path: "receivedFriendsRequests",
+            select: ["firstName", "lastName", "email", "_id", "RP"]
+        })
         if (!user) {
             throw new NotFoundError('User not found');
         }
@@ -175,7 +181,10 @@ const getReceivedRequests = async (req, res) => {
 
 const getSentRequests = async (req, res) => {
     try {
-        const user = await User.findById(req.body.user).populate('sentFriendsRequests');
+        const user = await User.findById(req.body.user).populate({
+            path: "sentFriendsRequests",
+            select: ["firstName", "lastName", "email", "_id", "RP"]
+        })
         if (!user) {
             throw new NotFoundError('User not found');
         }
