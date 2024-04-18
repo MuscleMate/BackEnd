@@ -69,4 +69,6 @@ const WorkoutSchema = new mongoose.Schema({
   ],
 }, { timestamps: true });
 
-module.exports = mongoose.model("Workout", WorkoutSchema, "Workouts");
+const db = mongoose.connection.useDb("MuscleMateDB");
+
+module.exports = db.model("Workout", WorkoutSchema, "Workouts");

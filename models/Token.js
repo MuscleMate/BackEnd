@@ -34,5 +34,6 @@ TokenSchema.methods.compareTokens = async function (tokenValue) {
   return isCorrect;
 };
 
+const db = mongoose.connection.useDb("MuscleMateDB");
 
-module.exports = mongoose.model("Token", TokenSchema, "Tokens");
+module.exports = db.model("Token", TokenSchema, "Tokens");

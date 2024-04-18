@@ -240,4 +240,6 @@ UserSchema.methods.comparePasswords = async function (password) {
   return isCorrect;
 };
 
-module.exports = mongoose.model("User", UserSchema, "Users");
+const db = mongoose.connection.useDb("MuscleMateDB");
+
+module.exports = db.model("User", UserSchema, "Users");

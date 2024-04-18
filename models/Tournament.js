@@ -38,4 +38,6 @@ const TournamentSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model("Tournament", TournamentSchema, "Tournaments");
+const db = mongoose.connection.useDb("MuscleMateDB");
+
+module.exports = db.model("Tournament", TournamentSchema, "Tournaments");

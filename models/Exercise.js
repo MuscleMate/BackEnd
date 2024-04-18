@@ -15,4 +15,6 @@ const ExerciseSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Exercise", ExerciseSchema, "Exercises");
+const db = mongoose.connection.useDb("MuscleMateReadOnlyDB");
+
+module.exports = db.model("Exercise", ExerciseSchema, "Exercises");
