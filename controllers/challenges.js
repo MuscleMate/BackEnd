@@ -17,7 +17,7 @@ const getChallenges = async (req, res) => {
 /** Replace given challenge with a new one
  * Deletes specified challenge and draws a new one, with the same difficulty level
  * 
- * @url GET /challenges 
+ * @url PUT /challenges 
  * @body challengeID - id of the challenge to replace
  * @response challenge - new challenge
  * @deprecated not implemented
