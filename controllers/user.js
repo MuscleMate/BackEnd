@@ -28,6 +28,7 @@ const getUser = async (req, res) => {
             })
             .populate("workouts")
             .populate("tournaments")
+            .populate("challenges")
             .populate({
                 path: "receivedFriendsRequests",
                 select: ["firstName", "lastName", "email", "_id", "RP"]
@@ -49,7 +50,8 @@ const getUser = async (req, res) => {
                 "measurements",
                 "suplements",
                 "receivedFriendsRequests", 
-                "sentFriendsRequests"];
+                "sentFriendsRequests",
+                "challenges"];
         } else {
             fieldsToDelete = [
                 "dateOfBirth",
@@ -62,7 +64,8 @@ const getUser = async (req, res) => {
                 "receivedFriendsRequests",
                 "sentFriendsRequests",
                 "suplements",
-                "measurements"
+                "measurements",
+                "challenges"
             ];
         }
 
@@ -100,6 +103,7 @@ const getCurrentUser = async (req, res) => {
             .populate("tournaments")
             .populate("receivedFriendsRequests")
             .populate("sentFriendsRequests")
+            .populate("challenges")
             .select(["-password"]);
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);

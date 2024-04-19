@@ -6,6 +6,7 @@ const { BadRequestError, UnauthenticatedError } = require("../errors");
 const jwt = require("jsonwebtoken");
 const sendEmail= require("../utils/sendEmail");
 const { resetPasswordTemplate } = require("../utils/emailTemaplates");
+const drawChallenge = require("../utils/challenges");
 
 /** Registers a new user
  * @url POST /auth/register
@@ -37,6 +38,12 @@ const register = async (req, res) => {
   if (userExists) {
     throw new BadRequestError(`User with email ${email} already exists`);
   }
+
+  // Draw challenges
+  const easyChallenge = await drawChallenge("easy")
+  const mediumChallenge = await drawChallenge("medium")
+  const hardChallenge = await drawChallenge("hard")
+  req.body.challenges = [easyChallenge, mediumChallenge, hardChallenge];
 
   const user = await User.create(req.body);
 

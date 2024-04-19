@@ -8,4 +8,5 @@ router.route("/:id").delete(delete_workout).get(get_singleworkout).put(update_wo
 router.route("/:id/start").post(start_workout);
 router.route("/:id/end").post(end_workout);
 router.route("/:id/favourite").put(change_favourite);
+
 module.exports = router;

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { db } = require("../database/connect");
 
 const WorkoutSchema = new mongoose.Schema({
   title: {
@@ -68,7 +69,5 @@ const WorkoutSchema = new mongoose.Schema({
     },
   ],
 }, { timestamps: true });
-
-const db = mongoose.connection.useDb("MuscleMateDB");
 
 module.exports = db.model("Workout", WorkoutSchema, "Workouts");

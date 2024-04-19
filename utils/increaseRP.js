@@ -3,18 +3,20 @@ const User = require('../models/User');
 
 /** Increases rp points and levels up the user if necessary
  * @param {string} userID The user id
- * @param {string} action enum like variable with possible values: tournamentWin, tournamentPodium, tournamentParticipation, challenge, workout
+ * @param {string} action enum like variable with possible values: tournamentWin, tournamentPodium, tournamentParticipation, challengeEasy, challengeMedium, challengeHard , workout
  * 
  * @description Points needed to level up increase by factor of 2 with each level
  * 
  */
 const increaseRP = async (userID, action) => {
     const rpAmountEnum = {
-        tournamentWin: 100,
-        tournamentPodium: 70,
+        tournamentWin: 125,
+        tournamentPodium: 75,
         tournamentParticipation: 50,
-        challenge: 50,
-        workout: 30,
+        challengeEasy: 50,
+        challengeMedium: 75,
+        challengeHard: 100,
+        workout: 50,
     };
 
 

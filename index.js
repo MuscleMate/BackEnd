@@ -6,7 +6,6 @@ require("dotenv").config({
   path:
     process.env.NODE_ENV === "development " ? "./.env.development" : "./.env",
 });
-const connectDB = require("./database/connect");
 const cookieParser = require("cookie-parser");
 
 // Security imports
@@ -21,6 +20,7 @@ const workoutsRoutes = require("./routes/workouts");
 const tournamentRoutes = require("./routes/tournaments");
 const userRoutes = require("./routes/user");
 const friendsRoutes = require("./routes/friends");
+const challengesRoutes = require("./routes/challenges");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -51,6 +51,7 @@ app.use("/workouts", requireAuth, workoutsRoutes);
 app.use("/tournaments", requireAuth, tournamentRoutes);
 app.use("/user", requireAuth, userRoutes);
 app.use("/friends", requireAuth, friendsRoutes);
+app.use("/challenges", requireAuth, challengesRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
@@ -58,10 +59,6 @@ app.use(errorHandlerMiddleware);
 
 const start = async () => {
   try {
-    // Connecting to database
-    await connectDB(process.env.MONGODB_URI).then(() =>
-      console.log("Database connected")
-    );
     // Starting the server
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)

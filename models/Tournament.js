@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { db } = require("../database/connect");
 
 const TournamentSchema = new mongoose.Schema({
   name: {
@@ -37,7 +38,5 @@ const TournamentSchema = new mongoose.Schema({
   },
 
 }, { timestamps: true });
-
-const db = mongoose.connection.useDb("MuscleMateDB");
 
 module.exports = db.model("Tournament", TournamentSchema, "Tournaments");

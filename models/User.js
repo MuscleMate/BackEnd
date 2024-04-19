@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const { db } = require("../database/connect");
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -128,6 +129,12 @@ const UserSchema = new mongoose.Schema({
       ref: "Workout",
     },
   ],
+  challenges: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Challenge",
+    },
+  ],
   tournaments: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -239,7 +246,5 @@ UserSchema.methods.comparePasswords = async function (password) {
   const isCorrect = await bcrypt.compare(password, this.password);
   return isCorrect;
 };
-
-const db = mongoose.connection.useDb("MuscleMateDB");
 
 module.exports = db.model("User", UserSchema, "Users");

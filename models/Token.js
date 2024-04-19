@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { maxAge } = require("../utils/JWT");
+const { db } = require("../database/connect");
 
 const TokenSchema = new mongoose.Schema({
     token: {
@@ -33,7 +34,5 @@ TokenSchema.methods.compareTokens = async function (tokenValue) {
   const isCorrect = await bcrypt.compare(tokenValue, this.token);
   return isCorrect;
 };
-
-const db = mongoose.connection.useDb("MuscleMateDB");
 
 module.exports = db.model("Token", TokenSchema, "Tokens");
