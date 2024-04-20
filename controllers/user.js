@@ -98,11 +98,20 @@ const getCurrentUser = async (req, res) => {
         await increaseRP(userID, "workout");
 
         const user = await User.findById(userID)
-            .populate("friends")
+            .populate({
+                path: "friends",
+                select: ["firstName", "lastName", "email", "_id", "RP"]
+            })
             .populate("workouts")
             .populate("tournaments")
-            .populate("receivedFriendsRequests")
-            .populate("sentFriendsRequests")
+            .populate({
+                path: "receivedFriendsRequests",
+                select: ["firstName", "lastName", "_id", "RP"]
+            })
+            .populate({
+                path: "sentFriendsRequests",
+                select: ["firstName", "lastName", "_id", "RP"]
+            })
             .populate("challenges")
             .select(["-password"]);
         if (!user) {
