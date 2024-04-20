@@ -13,7 +13,7 @@ const Exercise = require("../models/Exercise");
  */
 const createWorkout = async (req, res) => {
   const { user: userID } = req.body;
-  var { exercises } = req.body;
+  var { exercises, company, access } = req.body;
   const possibleFields = ["user", "title", "description", "startDate", "exercises", "equipment", "company", "favourite", "access"];
 
   if (Object.keys(req.body).some((field) => !possibleFields.includes(field))) {
@@ -100,7 +100,7 @@ const getAllWorkouts = async (req, res) => {
       let newWorkout = { ...workout };
       newWorkout.exercises = newWorkout.exercises.length;
       newWorkout.date = new Date(newWorkout.startDate).toLocaleDateString();
-      newWorkout.time = new Date(newWorkout.startDate).toLocaleTimeString();
+      newWorkout.time = new Date(newWorkout.startDate).toLocaleTimeString().slice(0, 5);
       delete newWorkout.startDate;
       return newWorkout;
     })
@@ -149,6 +149,11 @@ const deleteWorkout = async(req,res) => {
 const getSingleWorkout = async (req, res) => {
   const { id } = req.params;
   const { user: userID } = req.body;
+
+  if (!id) {
+    throw new BadRequestError("Please provide workout id");
+  }
+
   const user = await User.findById(userID);
   if (!user) {
     return res
@@ -177,7 +182,7 @@ const getSingleWorkout = async (req, res) => {
   }
 
   workout.date = new Date(workout.startDate).toLocaleDateString();
-  workout.time = new Date(workout.startDate).toLocaleTimeString();
+  workout.time = new Date(workout.startDate).toLocaleTimeString().slice(0, 5);
   delete workout.startDate;    
 
   try {

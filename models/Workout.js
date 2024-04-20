@@ -10,7 +10,6 @@ const WorkoutSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, "Please provide description"],
     minlength: 10,
     maxlength: 500,
   },
