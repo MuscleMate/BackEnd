@@ -11,6 +11,7 @@ const {StatusCodes} = require('http-status-codes');
  */
 const getChallenges = async (req, res) => {
     //TODO delete deprecated tag after implementing the function
+    //TODO @VEXI19 calculating exp granted for completing challenge
     res.status(StatusCodes.NOT_IMPLEMENTED).json({message: "Not implemented"});
 }
 
