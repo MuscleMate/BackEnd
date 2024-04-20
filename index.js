@@ -21,6 +21,7 @@ const tournamentRoutes = require("./routes/tournaments");
 const userRoutes = require("./routes/user");
 const friendsRoutes = require("./routes/friends");
 const challengesRoutes = require("./routes/challenges");
+const exercisesRoutes = require("./routes/exercises");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -52,6 +53,7 @@ app.use("/tournaments", requireAuth, tournamentRoutes);
 app.use("/user", requireAuth, userRoutes);
 app.use("/friends", requireAuth, friendsRoutes);
 app.use("/challenges", requireAuth, challengesRoutes);
+app.use("/exercises", requireAuth, exercisesRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);

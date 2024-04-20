@@ -1,12 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-const { add_workout, get_workouts , delete_workout , get_singleworkout, update_workout, change_favourite, start_workout, end_workout } = require("../controllers/workouts.js");
+const { getAllWorkouts, createWorkout, deleteWorkout, getSingleWorkout, updateWorkout, 
+    changeFavourite, startWorkout, endWorkout, getCompany, deleteUserFromAccess, 
+    deleteUserFromCompany, getAccess, addUserToAccess, addUserToCompany } = require("../controllers/workouts.js");
 
-router.route("/").post(add_workout).get(get_workouts);
-router.route("/:id").delete(delete_workout).get(get_singleworkout).put(update_workout);
-router.route("/:id/start").post(start_workout);
-router.route("/:id/end").post(end_workout);
-router.route("/:id/favourite").put(change_favourite);
+router.route("/").post(createWorkout).get(getAllWorkouts);
+router.route("/:id").delete(deleteWorkout).get(getSingleWorkout).put(updateWorkout);
+router.route("/:id/start").post(startWorkout);
+router.route("/:id/end").post(endWorkout);
+router.route("/:id/favourite").put(changeFavourite);
+router.route("/:id/company").delete(deleteUserFromCompany).get(getCompany).post(addUserToCompany);
+router.route("/:id/access").delete(deleteUserFromAccess).get(getAccess).post(addUserToAccess);
 
 module.exports = router;

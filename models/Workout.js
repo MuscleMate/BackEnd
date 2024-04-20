@@ -16,18 +16,12 @@ const WorkoutSchema = new mongoose.Schema({
   },
   duration: {
     type: Number,
-    required: [true, "Please provide duration"],
-    min: 1,
-    max: 120,
   },
-  date: {
+  startDate: {
     type: Date,
     required: [true, "Please provide date"],
   },
-  startTime: {
-    type: Date,
-  },
-  endTime: {
+  endDate: {
     type: Date,
   },
   ongoing: {
