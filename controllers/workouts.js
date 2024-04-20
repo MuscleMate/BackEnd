@@ -335,7 +335,7 @@ const getCompany = async(req,res) => {
   try {
     const user = await User.findById(userID);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError(`User with id ${userID} not found`);
     }
 
     const workout = await Workout.findById(id).populate({
@@ -344,10 +344,10 @@ const getCompany = async(req,res) => {
     })
     if(!workout)
     {
-      throw new NotFoundError('Workout not found');
+      throw new NotFoundError(`Workout with id ${id} not found`);
     }
 
-    if (workout.user != userID) 
+    if (workout.user.toString() != userID) 
     {
       throw new UnauthorizedError('User not authorized to get information about this workout');
     }
@@ -403,7 +403,46 @@ const addUserToCompany = async(req,res) => {
 }
 
 const deleteUserFromCompany = async(req,res) => {
-  
+  const { user: userID } = req.body;
+  const { id } = req.params;
+  const { company } = req.body;
+
+  if (!company) {
+    throw new BadRequestError("Please provide company");
+  }
+
+  try {
+    const user = await User.findById(userID);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const workout = await Workout.findById(id);
+    if(!workout)
+    {
+      throw new NotFoundError('Workout not found');
+    }
+
+    if (workout.user != userID) 
+    {
+      throw new UnauthorizedError('User not authorized to update this workout');
+    }
+
+    if (workout.company.indexOf(company) === -1) {
+      throw new BadRequestError("User is not in company");
+    }
+
+    const userToBeDeleted = await User.findById(company);
+    if (!userToBeDeleted) {
+      throw new NotFoundError('User not found');
+    }
+
+    await workout.updateOne({ $pull: { company: userToBeDeleted._id } });
+    await userToBeDeleted.updateOne({ $pull: { workouts: workout._id } });
+    res.status(StatusCodes.OK).json({msg: "User deleted from company"});
+  } catch (err) {
+    throw new BadRequestError(err);
+  }
 }  
 
 const getAccess = async(req,res) => {
