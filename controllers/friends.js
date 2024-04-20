@@ -358,6 +358,49 @@ const getTournamentsRanking = async (req, res) => {
     }
 }
 
+/** Searches for friends by first name, last name or email
+ * @url POST /friends/search
+ * @body searchText
+ * @query count - number of friends to return
+ * @response friends
+ */
+const searchFriend = async(req,res) =>{
+    const { searchText } = req.body;
+    const { count } = req.query;
+    
+    try {
+        const user = await User.findById(req.body.user).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "email", "_id"]
+        });
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        const friends = await User.findById(req.body.user).populate({
+            path: "friends",
+            select: ["firstName", "lastName", "email", "_id"]
+        }).select("friends").find({
+            $or: [
+                {firstName: {$regex: searchText, $options: 'i'}},
+                {lastName: {$regex: searchText, $options: 'i'}},
+                {email: {$regex: searchText, $options: 'i'}}
+            ]
+        }).limit(count);
+        // const friends = user.friends && user.friends.find({
+        //     $or: [
+        //         {firstName: {$regex: searchText, $options: 'i'}},
+        //         {lastName: {$regex: searchText, $options: 'i'}},
+        //         {email: {$regex: searchText, $options: 'i'}}
+        //     ]
+        // }).limit(count);
+
+        res.status(StatusCodes.OK).json({ friends })
+    } catch (err) {
+        throw new BadRequestError(err.message);
+    }
+}
+
 module.exports ={getFriends,addFriend, sendRequest, cancelFriend,denyFriend, deleteFriend, getReceivedRequests, getSentRequests, 
-    getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking};
+    getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking, searchFriend };
 

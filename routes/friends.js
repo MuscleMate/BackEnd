@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 
 const { getFriends,sendRequest, addFriend, denyFriend, deleteFriend, cancelFriend, getReceivedRequests, getSentRequests,
-getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking } = require("../controllers/friends.js");
+getLevelRanking, getExpRanking, getChallengesRanking, getWorkoutsRanking, getTournamentsRanking, searchFriend } = require("../controllers/friends.js");
 
 router.route("/").get(getFriends);
+router.route("/search").post(searchFriend);
 router.route("/rankings/level").get(getLevelRanking);
 router.route("/rankings/exp").get(getExpRanking);
 router.route("/rankings/challenges").get(getChallengesRanking);
