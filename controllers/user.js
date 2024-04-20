@@ -4,6 +4,8 @@ const User = require("../models/User");
 const Workout = require("../models/Workout");
 const Tournament = require("../models/Tournament");
 const increaseRP = require("../utils/increaseRP");
+const Token = require("../models/Token");
+const sendNotification = require("../utils/sendNotification");
 
 /** Get user by id
  * @url GET /user/:id
@@ -189,8 +191,31 @@ const deleteUser = async (req, res) => {
 
         for (let i = 0; i < user.workouts.length; i++) {
             const workout = await Workout.findById(user.workouts[i]);
+
             if (workout.user.toString() === userID) {
-                await workout.deleteOne();
+                workout.user = null;
+
+                if(workout.company.length !==0 && !workout.endTime)
+                {      
+                    
+                    workout.user = workout.company[0];
+                    const newUser = await User.findById(workout.user);
+
+                    if(!newUser.workouts)
+                    {
+                        newUser.workouts = [workout._id]
+                    }
+                    else
+                    {
+                        newUser.workouts.push(workout._id);
+                    } 
+
+                    // Deletes first element in array
+                    workout.company.shift();
+                    await workout.save();
+                    await newUser.save();
+                    await sendNotification([newUser._id],`You have become the owner of "${workout.title}" workout!`)
+                }
             } else {
                 workout.company = workout.company.filter((company) => company.toString() !== userID);
                 workout.access = workout.access.filter((access) => access.toString() !== userID);
@@ -210,6 +235,11 @@ const deleteUser = async (req, res) => {
                 await tournament.save();
             }
         }
+
+        await Token.deleteMany({ user: userID });  
+        res.cookie("jwt", "", {
+            maxAge: 1,
+          });
 
         await user.deleteOne();
         res.status(StatusCodes.OK).json({ message: "User deleted successfully" });
