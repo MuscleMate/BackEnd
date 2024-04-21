@@ -366,12 +366,13 @@ const getTournamentsRanking = async (req, res) => {
  */
 const searchFriend = async(req,res) =>{
     const { searchText } = req.body;
-    const { count } = req.query;
+    let { count } = req.query;
+
+    count = count ? count : 10;
     
     try {
         const user = await User.findById(req.body.user).populate({
             path: "friends",
-            select: ["firstName", "lastName", "email", "_id"]
         });
         if (!user) {
             throw new NotFoundError('User not found');
@@ -379,23 +380,18 @@ const searchFriend = async(req,res) =>{
 
         const friends = await User.findById(req.body.user).populate({
             path: "friends",
-            select: ["firstName", "lastName", "email", "_id"]
-        }).select("friends").find({
-            $or: [
-                {firstName: {$regex: searchText, $options: 'i'}},
-                {lastName: {$regex: searchText, $options: 'i'}},
-                {email: {$regex: searchText, $options: 'i'}}
-            ]
-        }).limit(count);
-        // const friends = user.friends && user.friends.find({
-        //     $or: [
-        //         {firstName: {$regex: searchText, $options: 'i'}},
-        //         {lastName: {$regex: searchText, $options: 'i'}},
-        //         {email: {$regex: searchText, $options: 'i'}}
-        //     ]
-        // }).limit(count);
+            select: ["firstName", "lastName", "email", "_id"],
+            match: {
+                $or: [
+                    {firstName: {$regex: searchText, $options: 'i'}},
+                    {lastName: {$regex: searchText, $options: 'i'}},
+                    {email: {$regex: searchText, $options: 'i'}}
+                ]
+            },
+            limit: count
+        }).select("friends").lean();
 
-        res.status(StatusCodes.OK).json({ friends })
+        res.status(StatusCodes.OK).json({ friends: friends.friends })
     } catch (err) {
         throw new BadRequestError(err.message);
     }
