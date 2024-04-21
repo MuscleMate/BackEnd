@@ -105,6 +105,12 @@ const UserSchema = new mongoose.Schema({
       default: 0,
     }
   },
+  templates: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Template",
+    }
+  ],
   friends: [
     {
       type: mongoose.Schema.Types.ObjectId,

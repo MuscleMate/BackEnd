@@ -22,6 +22,7 @@ const userRoutes = require("./routes/user");
 const friendsRoutes = require("./routes/friends");
 const challengesRoutes = require("./routes/challenges");
 const exercisesRoutes = require("./routes/exercises");
+const templatesRoutes = require("./routes/templates");
 
 // Middleware imports
 const notFoundMiddleware = require("./middleware/not-found");
@@ -54,6 +55,7 @@ app.use("/user", requireAuth, userRoutes);
 app.use("/friends", requireAuth, friendsRoutes);
 app.use("/challenges", requireAuth, challengesRoutes);
 app.use("/exercises", requireAuth, exercisesRoutes);
+app.use("/templates", requireAuth, templatesRoutes);
 
 // Error handling
 app.use(notFoundMiddleware);
