@@ -192,34 +192,51 @@ const deleteUser = async (req, res) => {
         for (let i = 0; i < user.workouts.length; i++) {
             const workout = await Workout.findById(user.workouts[i]);
 
+            // User is an owner
             if (workout.user.toString() === userID) {
                 workout.user = null;
 
-                if(workout.company.length !==0 && !workout.endTime)
-                {      
-                    
-                    workout.user = workout.company[0];
-                    const newUser = await User.findById(workout.user);
-
-                    if(!newUser.workouts)
-                    {
-                        newUser.workouts = [workout._id]
-                    }
-                    else
-                    {
-                        newUser.workouts.push(workout._id);
-                    } 
-
-                    // Deletes first element in array
-                    workout.company.shift();
-                    await workout.save();
-                    await newUser.save();
-                    await sendNotification([newUser._id],`You have become the owner of "${workout.title}" workout!`)
+                // Company is empty
+                if(workout.company.length === 0)
+                {
+                    await workout.deleteOne();
                 }
-            } else {
+                // Company is not empty
+                else
+                {      
+                    // Workout has not ended yet
+                    if(!workout.endTime)
+                    {
+                        workout.user = workout.company[0];
+
+                        // Deletes first element in array (new owner)
+                        workout.company.shift();
+
+                        const newOner = await User.findById(workout.user);
+                        await sendNotification([newOner._id],`You have become the owner of "${workout.title}" workout!`);
+                    }
+                 
+                    // If workout has ended we do nothing
+
+                    await workout.save();
+                }
+            }
+            // User in not an owner 
+            else {
+
                 workout.company = workout.company.filter((company) => company.toString() !== userID);
                 workout.access = workout.access.filter((access) => access.toString() !== userID);
-                await workout.save();
+
+                // There is no owner and user is the only company
+                if(!workout.user && workout.company.length===0)
+                {
+                    await workout.deleteOne();
+                }
+                else
+                {
+                    await workout.save();
+                }
+                        
             }
         }
 
