@@ -76,9 +76,9 @@ const createTournament = async (req, res) => {
 
         // sending notifications
         const admins = req.body.admins.filter(admin => admin !== req.body.user);
-        await sendNotification(user._id, admins, `You have been added as an admin to the tournament ${tournament.name}`);
-        await sendNotification(user._id, req.body.contestants, `You have been added as a contestant to the tournament ${tournament.name}`);
-        await sendNotification(user._id, req.body.user, `You have created the tournament ${tournament.name}`);
+        await sendNotification(admins, `You have been added as an admin to the tournament ${tournament.name}`);
+        await sendNotification(req.body.contestants, `You have been added as a contestant to the tournament ${tournament.name}`);
+        await sendNotification(req.body.user, `You have created the tournament ${tournament.name}`);
 
         await tournament.populate([{
             path: 'admins',
@@ -125,7 +125,7 @@ const updateTournament = async (req, res) => {
             }
             if (!admin.tournaments.includes(tournament._id)) {
                 await admin.updateOne({ $push: { tournaments: tournament._id } });
-                await sendNotification(user._id, [admin._id], `You have been added as an admin to the tournament ${tournament.name}`);
+                await sendNotification([admin._id], `You have been added as an admin to the tournament ${tournament.name}`);
             }
         }
     }
@@ -139,7 +139,7 @@ const updateTournament = async (req, res) => {
             }
             if (!contestant.tournaments.includes(tournament._id)) {
                 await contestant.updateOne({ $push: { tournaments: tournament._id } });
-                await sendNotification(user._id, [contestant._id], `You have been added as a contestant to the tournament ${tournament.name}`);
+                await sendNotification([contestant._id], `You have been added as a contestant to the tournament ${tournament.name}`);
             }
         }
     }
@@ -152,7 +152,7 @@ const updateTournament = async (req, res) => {
 
         // sending notifications
         if (req.body.startDate && req.body.startDate !== tournament.startDate || req.body.endDate && req.body.endDate !== tournament.endDate || req.body.determinant && req.body.determinant !== tournament.determinant) {
-            await sendNotification(user._id, tournament.admins, `Tournament ${tournament.name} has been updated`);
+            await sendNotification(tournament.admins, `Tournament ${tournament.name} has been updated`);
         }
     } catch (error) {
         throw new BadRequestError(error.message);
@@ -198,7 +198,7 @@ const updateTournamentRole = async (req, res) => {
         if (tournament.admins.indexOf(userToBeChangedDoc._id) === -1) {
             await tournament.updateOne({ $push: { admins: userToBeChangedDoc._id } });
             await tournament.updateOne({ $pull: { contestants: userToBeChangedDoc._id } });
-            await sendNotification(user, userToBeChanged, `Tour role in the tournament ${tournament.name} has been changed to an admin.`);
+            await sendNotification( userToBeChanged, `Tour role in the tournament ${tournament.name} has been changed to an admin.`);
         } else {
             throw new BadRequestError('User is already an admin');
         }
@@ -207,7 +207,7 @@ const updateTournamentRole = async (req, res) => {
         if (tournament.contestants.indexOf(userToBeChangedDoc._id) === -1) {
             await tournament.updateOne({ $push: { contestants: userToBeChangedDoc._id } });
             await tournament.updateOne({ $pull: { admins: userToBeChangedDoc._id } });
-            await sendNotification(user, userToBeChanged, `Tour role in the tournament ${tournament.name} has been changed to a contestant.`);
+            await sendNotification(userToBeChanged, `Tour role in the tournament ${tournament.name} has been changed to a contestant.`);
         } else {
             throw new BadRequestError('User is already a contestant');
         }
@@ -253,12 +253,12 @@ const addUsersToTournament = async (req, res) => {
         if (role === 'admin') {
             await tournament.updateOne({ $push: { admins: userTBA._id } });
             await userTBA.updateOne({ $push: { tournaments: tournament._id } });
-            await sendNotification(user, userToBeAdded, `You have been added as an admin to the tournament ${tournament.name}`);
+            await sendNotification(userToBeAdded, `You have been added as an admin to the tournament ${tournament.name}`);
         }
         if (role === 'contestant') {
             await tournament.updateOne({ $push: { contestants: userTBA._id } });
             await userTBA.updateOne({ $push: { tournaments: tournament._id } });
-            await sendNotification(user, userToBeAdded, `You have been added as a contestant to the tournament ${tournament.name}`);
+            await sendNotification(userToBeAdded, `You have been added as a contestant to the tournament ${tournament.name}`);
         }
         res.status(StatusCodes.OK).json({ msg: "User added" });
 
@@ -328,7 +328,7 @@ const deleteTournament = async (req, res) => {
             await contestant.updateOne({ $pull: { tournaments: tournament._id } });
         }
         await tournament.deleteOne();
-        await sendNotification(userID, [...tournament.admins, ...tournament.contestants], `Tournament ${tournament.name}, which you've been part of, has been deleted`);
+        await sendNotification( [...tournament.admins, ...tournament.contestants], `Tournament ${tournament.name}, which you've been part of, has been deleted`);
         res.status(StatusCodes.OK).json({ msg: "Tournament deleted" });
     }
     catch (error) {
@@ -371,7 +371,7 @@ const deleteUserFromTournament = async (req, res) => {
             await tournament.updateOne({ $pull: { contestants: userToBeDeleted } });
         }
         await userTBD.updateOne({ $pull: { tournaments: tournament._id } });
-        await sendNotification(userID, userToBeDeleted, `You have been deleted from the tournament ${tournament.name}`);
+        await sendNotification(userToBeDeleted, `You have been deleted from the tournament ${tournament.name}`);
         res.status(StatusCodes.OK).json({ msg: "User deleted from tournament" });
     }
     catch (error) {

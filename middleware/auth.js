@@ -5,6 +5,9 @@ const Token = require("../models/Token");
 
 const requireAuth = async(req, res, next) => {
   const token = req.cookies.jwt;
+
+  
+
   if (!token) {
     throw new UnauthenticatedError("Unauthorized access");
   }
