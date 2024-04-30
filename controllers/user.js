@@ -1163,9 +1163,29 @@ const deleteMeasurement = async (req, res) => {
     }
 }
 
+const getProfile = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).select(["firstName", "lastName", "email", "RP", "suplements", "measurements"]).lean();
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.suplements = user.suplements.filter((suplement) => suplement.status === "on");
+        user.suplements = [...user.suplements].map((suplement) => ({ name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]}));
+        user.measurements = [...user.measurements].map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0].size}));
+
+        res.status(StatusCodes.OK).json({ profileInfo: user });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+
+}
+
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
     getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel,
-    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement };
+    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement, getProfile };
