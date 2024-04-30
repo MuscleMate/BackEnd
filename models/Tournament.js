@@ -33,10 +33,21 @@ const TournamentSchema = new mongoose.Schema({
   ],
   determinant: {
     type: String,
-    enum: ["time", "rounds"],
+    enum: ["workouts", "rounds"],
     required: [true, "Please provide determinant"],
   },
-
+  ranking: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      score: {
+        type: Number,
+        default: 0,
+      },
+    },
+  ],
 }, { timestamps: true });
 
 module.exports = db.model("Tournament", TournamentSchema, "Tournaments");
