@@ -928,10 +928,15 @@ const updateSuplementStatus = async (req, res) => {
  * @response users
  */
 const searchUser = async(req,res) =>{
-    const { searchText } = req.body;
+    const { searchText, user: userID } = req.body;
     const { count } = req.query;
     
     try {
+        const searchingUser = await User.findById(userID);
+        if (!searchingUser) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
         let users = await User.find(
             {
                 $or: [
@@ -943,8 +948,8 @@ const searchUser = async(req,res) =>{
         ).select('_id firstName lastName email').limit(count);
 
         users = users.filter(user => {
-            return user._id.toString() !== req.body.user;
-        });
+            return user._id.toString() !== req.body.user && !searchingUser.friends.includes(user._id) ;
+        })
 
         res.status(StatusCodes.OK).json({users})
     } catch (err) {
