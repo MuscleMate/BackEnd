@@ -33,7 +33,7 @@ const TournamentSchema = new mongoose.Schema({
   ],
   determinant: {
     type: String,
-    enum: ["workouts", "rounds"],
+    enum: ["workouts", "time", "weight"],
     required: [true, "Please provide determinant"],
   },
   ranking: [
