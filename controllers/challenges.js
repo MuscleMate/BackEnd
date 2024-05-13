@@ -1,6 +1,7 @@
 const {StatusCodes} = require('http-status-codes');
 const Challenge = require('../models/Challenge');
-
+const User = require('../models/User');
+const ChallengesList = require('../models/ChallengesList');
 /** Get user's challenges
  * Checks if any of current challenges are expired, if so deletes them and draws a new ones with the same difficulty level
  * Returns a list of current and past challenges.
@@ -22,7 +23,6 @@ const getChallenges = async (req, res) => {
  * @url PUT /challenges 
  * @body challengeID - id of the challenge to replace
  * @response challenge - new challenge
- * @deprecated not implemented
  */
 const replaceChallenge = async (req, res) => {
     //TODO delete deprecated tag after implementing the function
@@ -45,8 +45,8 @@ const replaceChallenge = async (req, res) => {
     difficulty = challengeToChange.difficulty;
     try{
         const challengeReplacment = await ChallengesList.find({difficulty : difficulty});
-        await user.updateOne({ $pull: { challenges: challengeToChange } });
-        await user.updateOne({ $push: { challenges: challengeReplacment } });
+        await user.updateOne({ $pull: { challenges: challengeToChange._id } });
+        await user.updateOne({ $push: { challenges: challengeReplacment._id } });
         res.status(StatusCodes.OK).json(challengeReplacment);
     }
     catch(err){
