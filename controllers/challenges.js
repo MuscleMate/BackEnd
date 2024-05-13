@@ -44,7 +44,7 @@ const replaceChallenge = async (req, res) => {
     }
     difficulty = challengeToChange.difficulty;
     try{
-        const challengeReplacment = await ChallengesList.find({difficulty : difficulty});
+        const challengeReplacment = await ChallengesList.find({difficulty : difficulty}); 
         await user.updateOne({ $pull: { challenges: challengeToChange._id } });
         await user.updateOne({ $push: { challenges: challengeReplacment._id } });
         res.status(StatusCodes.OK).json(challengeReplacment);
