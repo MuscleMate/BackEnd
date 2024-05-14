@@ -928,10 +928,15 @@ const updateSuplementStatus = async (req, res) => {
  * @response users
  */
 const searchUser = async(req,res) =>{
-    const { searchText } = req.body;
+    const { searchText, user: userID } = req.body;
     const { count } = req.query;
     
     try {
+        const searchingUser = await User.findById(userID);
+        if (!searchingUser) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
         let users = await User.find(
             {
                 $or: [
@@ -943,8 +948,8 @@ const searchUser = async(req,res) =>{
         ).select('_id firstName lastName email').limit(count);
 
         users = users.filter(user => {
-            return user._id.toString() !== req.body.user;
-        });
+            return user._id.toString() !== req.body.user && !searchingUser.friends.includes(user._id) ;
+        })
 
         res.status(StatusCodes.OK).json({users})
     } catch (err) {
@@ -1158,9 +1163,29 @@ const deleteMeasurement = async (req, res) => {
     }
 }
 
+const getProfile = async (req, res) => {
+    const { user: userID } = req.body;
+
+    try {
+        const user = await User.findById(userID).select(["firstName", "lastName", "email", "RP", "suplements", "measurements"]).lean();
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        user.suplements = user.suplements.filter((suplement) => suplement.status === "on");
+        user.suplements = [...user.suplements].map((suplement) => ({ name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]}));
+        user.measurements = [...user.measurements].map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0].size}));
+
+        res.status(StatusCodes.OK).json({ profileInfo: user });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+
+}
+
 module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
     updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
     getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
     updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
     getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel,
-    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement };
+    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement, getProfile };
