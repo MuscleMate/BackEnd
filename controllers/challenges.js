@@ -13,33 +13,34 @@ const drawChallege = require('../utils/challenges');
  * @response challenges - list of current and past challenges
  */
 const getChallenges = async (req, res) => {
-    let {count} = req.query;
+    let { count = 10 } = req.query;
     const{ user:userID } = req.body;
-    const user = await User.findById(userID).populate({
-        path:'challenges',
-        mode:'Challenge',
-        select:'_id title description startDate endDate difficulty status'
-    });
+    const user = await User.findById(userID);
     if(!user)
     {
         throw new NotFoundError(`No user with id : ${userID}`);
     }
     try
     {
-        for(let i = 0;i<user.challenges.length;i++)
+        for(let challengeID of user.challenges)
         {
-            let challenge = user.challenges[i];
-            if(challenge.status == 'ongoing' && challenge.endDate < Date.now())
-            {
-                difficulty = challange.difficulty;
+            const challenge = await Challenge.findById(challengeID)
+            if (!challenge) {
+                throw new NotFoundError(`No challenge with id : ${challengeID}`);
+            }
+
+            if (challenge.status === 'ongoing' && challenge.endDate < Date.now()) {
+                const difficulty = challenge.difficulty;
                 const challengeReplacment = await drawChallege(difficulty);
-                await user.updateOne({ $pull: { challenges: challenge._id } });
-                await user.updateOne({ $push: { challenges: challengeReplacment._id } });
-                await Challenge.deleteOne({ _id: challenge._id });
+                await user.updateOne({ $pull: { challenges: challengeID } });
+                await user.updateOne({ $push: { challenges: challengeReplacment } });
+                await Challenge.deleteOne({ _id: challengeID });
             }
         }
-        const challengesDone = user.challenges.filter(challenge => challenge.status === 'complated').slice(0,count);
-        const challengesToDo = user.challenges.filter(challenge => challenge.status === 'ongoing');
+
+        let challenges = await User.findById(userID).populate('challenges').lean();
+        const challengesDone = challenges.challenges.filter(challenge => challenge.status === 'completed').sort((a, b) => a.startDate - b.startDate).slice(0,count);
+        const challengesToDo = challenges.challenges.filter(challenge => challenge.status === 'ongoing');
         res.status(StatusCodes.OK).json({      
             challengesDone: challengesDone,
             challengesToDo: challengesToDo });
