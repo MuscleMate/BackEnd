@@ -18,17 +18,18 @@ const getChallenges = async (req, res) => {
     const user = await User.findById(userID).populate({
         path:'challenges',
         mode:'Challenge',
+        match:{'status':'ongoing'},
         select:'_id title description startDate endDate difficulty status'
-    }).limit(count);
+    });
     if(!user)
     {
         throw new NotFoundError(`No user with id : ${userID}`);
     }
     try
     {
-        for(challange in user.challenges)
+        for(challenge in user.challenges)
         {
-            if(challange.status == 'ongoing' && challange.endDate < Date.now)
+            if(challenge.status == 'ongoing' && challenge.endDate < Date.now)
             {
                 difficulty = challange.difficulty;
                 const challengeReplacment = await drawChallege(difficulty);
@@ -37,16 +38,16 @@ const getChallenges = async (req, res) => {
                 await Challenge.deleteOne({ _id: challengeID });
             }
         }
-        res.status(StatusCodes.OK).json({challenges: user.challenges });
+        const challengesDone = user.challenges.filter(challenge => challenge.status === 'complated');
+        const challengesToDo = user.challenges.filter(challenge => challenge.status === 'ongoing').slice(0, count);
+        res.status(StatusCodes.OK).json({      
+            challengesDone: challengesDone,
+            challengesToDo: challengesToDo });
     }
     catch(err)
     {
             throw new BadRequestError(err.message);
     }
-    
-    //TODO delete deprecated tag after implementing the function
-    //TODO @VEXI19 calculating exp granted for completing challenge
-
 }
 
 /** Replace given challenge with a new one
