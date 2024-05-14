@@ -18,7 +18,6 @@ const getChallenges = async (req, res) => {
     const user = await User.findById(userID).populate({
         path:'challenges',
         mode:'Challenge',
-        match:{'status':'ongoing'},
         select:'_id title description startDate endDate difficulty status'
     });
     if(!user)
@@ -27,19 +26,20 @@ const getChallenges = async (req, res) => {
     }
     try
     {
-        for(challenge in user.challenges)
+        for(let i = 0;i<user.challenges.length;i++)
         {
-            if(challenge.status == 'ongoing' && challenge.endDate < Date.now)
+            let challenge = user.challenges[i];
+            if(challenge.status == 'ongoing' && challenge.endDate < Date.now())
             {
                 difficulty = challange.difficulty;
                 const challengeReplacment = await drawChallege(difficulty);
                 await user.updateOne({ $pull: { challenges: challenge._id } });
                 await user.updateOne({ $push: { challenges: challengeReplacment._id } });
-                await Challenge.deleteOne({ _id: challengeID });
+                await Challenge.deleteOne({ _id: challenge._id });
             }
         }
-        const challengesDone = user.challenges.filter(challenge => challenge.status === 'complated');
-        const challengesToDo = user.challenges.filter(challenge => challenge.status === 'ongoing').slice(0, count);
+        const challengesDone = user.challenges.filter(challenge => challenge.status === 'complated').slice(0,count);
+        const challengesToDo = user.challenges.filter(challenge => challenge.status === 'ongoing');
         res.status(StatusCodes.OK).json({      
             challengesDone: challengesDone,
             challengesToDo: challengesToDo });
