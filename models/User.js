@@ -81,7 +81,20 @@ const UserSchema = new mongoose.Schema({
       type: Number,
       min: 0,
       default: 0,
-    }
+    },
+    pointsHistory: [
+      {
+        points: {
+          type: Number,
+          min: 0,
+          required: [true, "Please provide points amount"],
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      }
+    ]
   },
   stats: {
     tournamentsAttended: {

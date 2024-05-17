@@ -1,14 +1,14 @@
 require('express')
 const router = require('express').Router()
 
-const { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, 
-    getCurrentWeight, updateCurrentWeight, getWeightHistory, getFirstName, 
-    updateFirstName, getLastName, updateLastName, getEmail, updateEmail, 
-    getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
-    updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, 
+const { getUser, updateUser, getCurrentUser, deleteUser, getNotifications,
+    getCurrentWeight, updateCurrentWeight, getWeightHistory, getFirstName,
+    updateFirstName, getLastName, updateLastName, getEmail, updateEmail,
+    getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight,
+    updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement,
     addSuplement, getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus,
-    searchUser, getLevel, getMeasurementHistory, getMeasurements, addMeasurement, 
-    updateMeasurement, deleteMeasurement, getProfile } = require('../controllers/user')
+    searchUser, getLevel, getMeasurementHistory, getMeasurements, addMeasurement,
+    updateMeasurement, deleteMeasurement, getProfile, getPointsHistory } = require('../controllers/user')
 
 router.route('/').put(updateUser).get(getCurrentUser).delete(deleteUser)
 router.route("/profile").get(getProfile);
@@ -24,6 +24,7 @@ router.route('/weight').get(getCurrentWeight).put(updateCurrentWeight)
 router.route('/weight/history').get(getWeightHistory)
 router.route('/gender').get(getGender).put(updateGender)
 router.route('/level').get(getLevel);
+router.route('/points/history').get(getPointsHistory);
 router.route('/suplement').get(getSuplement).post(addSuplement)
 router.route('/suplement/all').get(getAllSuplements)
 router.route('/suplement/dose').put(updateSuplementDose)

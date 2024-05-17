@@ -6,6 +6,7 @@ const Tournament = require("../models/Tournament");
 const increaseRP = require("../utils/increaseRP");
 const Token = require("../models/Token");
 const sendNotification = require("../utils/sendNotification");
+const userPointsHistory = require("../utils/userPointsHistory");
 
 /** Get user by id
  * @url GET /user/:id
@@ -51,7 +52,7 @@ const getUser = async (req, res) => {
             fieldsToDelete = [
                 "measurements",
                 "suplements",
-                "receivedFriendsRequests", 
+                "receivedFriendsRequests",
                 "sentFriendsRequests",
                 "challenges"];
         } else {
@@ -206,25 +207,22 @@ const deleteUser = async (req, res) => {
                 workout.user = null;
 
                 // Company is empty
-                if(workout.company.length === 0)
-                {
+                if (workout.company.length === 0) {
                     await workout.deleteOne();
                 }
                 // Company is not empty
-                else
-                {      
+                else {
                     // Workout has not ended yet
-                    if(!workout.endTime)
-                    {
+                    if (!workout.endTime) {
                         workout.user = workout.company[0];
 
                         // Deletes first element in array (new owner)
                         workout.company.shift();
 
                         const newOner = await User.findById(workout.user);
-                        await sendNotification([newOner._id],`You have become the owner of "${workout.title}" workout!`);
+                        await sendNotification([newOner._id], `You have become the owner of "${workout.title}" workout!`);
                     }
-                 
+
                     // If workout has ended we do nothing
 
                     await workout.save();
@@ -237,15 +235,13 @@ const deleteUser = async (req, res) => {
                 workout.access = workout.access.filter((access) => access.toString() !== userID);
 
                 // There is no owner and user is the only company
-                if(!workout.user && workout.company.length===0)
-                {
+                if (!workout.user && workout.company.length === 0) {
                     await workout.deleteOne();
                 }
-                else
-                {
+                else {
                     await workout.save();
                 }
-                        
+
             }
         }
 
@@ -262,10 +258,10 @@ const deleteUser = async (req, res) => {
             }
         }
 
-        await Token.deleteMany({ user: userID });  
+        await Token.deleteMany({ user: userID });
         res.cookie("jwt", "", {
             maxAge: 1,
-          });
+        });
 
         await user.deleteOne();
         res.status(StatusCodes.OK).json({ message: "User deleted successfully" });
@@ -309,15 +305,15 @@ const getCurrentWeight = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-    
+
         const weightHistory = user.weightHistory;
-        if (!weightHistory || weightHistory.length === 0 ) {
+        if (!weightHistory || weightHistory.length === 0) {
             throw new NotFoundError("No weight data found");
         }
-    
+
         const currentWeight = weightHistory.sort((a, b) => b.date - a.date)[0];
-    
-        res.status(StatusCodes.OK).json({currentWeight: currentWeight.weight});
+
+        res.status(StatusCodes.OK).json({ currentWeight: currentWeight.weight });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -346,7 +342,7 @@ const updateCurrentWeight = async (req, res) => {
         user.weightHistory.push({ weight });
         await user.save();
 
-        res.status(StatusCodes.OK).json({ updatedWeight: weight});
+        res.status(StatusCodes.OK).json({ updatedWeight: weight });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -356,7 +352,7 @@ const updateCurrentWeight = async (req, res) => {
  * @url GET /user/weight/history
  * @response weightHistory
  */
-const getWeightHistory = async (req, res) => { 
+const getWeightHistory = async (req, res) => {
     const { user: userID } = req.body;
 
     try {
@@ -364,8 +360,8 @@ const getWeightHistory = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-    
-        res.status(StatusCodes.OK).json({weightHistory: user.weightHistory});
+
+        res.status(StatusCodes.OK).json({ weightHistory: user.weightHistory });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -385,7 +381,7 @@ const getFirstName = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({firstName: user.firstName});
+        res.status(StatusCodes.OK).json({ firstName: user.firstName });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -436,7 +432,7 @@ const getLastName = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({lastName: user.lastName ?? ""});
+        res.status(StatusCodes.OK).json({ lastName: user.lastName ?? "" });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -451,7 +447,7 @@ const updateLastName = async (req, res) => {
     const { user: userID } = req.body;
     const { lastName } = req.body;
 
-    if (lastName === "") 
+    if (lastName === "")
         lastName = undefined;
 
     try {
@@ -486,7 +482,7 @@ const getEmail = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({email: user.email});
+        res.status(StatusCodes.OK).json({ email: user.email });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -542,7 +538,7 @@ const getDateOfBirth = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({dateOfBirth: user.dateOfBirth ?? ""});
+        res.status(StatusCodes.OK).json({ dateOfBirth: user.dateOfBirth ?? "" });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -557,7 +553,7 @@ const updateDateOfBirth = async (req, res) => {
     const { user: userID } = req.body;
     let { dateOfBirth } = req.body;
 
-    if (dateOfBirth === "") 
+    if (dateOfBirth === "")
         dateOfBirth = undefined;
 
     try {
@@ -565,7 +561,7 @@ const updateDateOfBirth = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         user.dateOfBirth = dateOfBirth;
         await user.save();
 
@@ -582,14 +578,14 @@ const updateDateOfBirth = async (req, res) => {
  */
 const getHeightHistory = async (req, res) => {
     const { user: userID } = req.body;
- 
+
     try {
         const user = await User.findById(userID);
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
- 
-        res.status(StatusCodes.OK).json({heightHistory: user.heightHistory});
+
+        res.status(StatusCodes.OK).json({ heightHistory: user.heightHistory });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -636,15 +632,15 @@ const getCurrentHeight = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-    
+
         const heightHistory = user.heightHistory;
-        if (!heightHistory || heightHistory.length === 0 ) {
+        if (!heightHistory || heightHistory.length === 0) {
             throw new NotFoundError("No height data found");
         }
-    
+
         const currentHeight = heightHistory.sort((a, b) => b.date - a.date)[0];
-    
-        res.status(StatusCodes.OK).json({currentHeight: currentHeight.height});
+
+        res.status(StatusCodes.OK).json({ currentHeight: currentHeight.height });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -663,7 +659,7 @@ const getGender = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        res.status(StatusCodes.OK).json({gender: user.gender ?? ""});
+        res.status(StatusCodes.OK).json({ gender: user.gender ?? "" });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -685,7 +681,7 @@ const updateGender = async (req, res) => {
         if (user.gender === gender) {
             throw new BadRequestError(`Date of birth is already set to ${gender ?? "unset"}`);
         }
-        
+
         user.gender = gender;
         await user.save();
 
@@ -709,9 +705,9 @@ const getAllSuplements = async (req, res) => {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
 
-        const suplements = user.suplements.map((suplement) => ({name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]}))
+        const suplements = user.suplements.map((suplement) => ({ name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0] }))
 
-        res.status(StatusCodes.OK).json({suplements: suplements});
+        res.status(StatusCodes.OK).json({ suplements: suplements });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -741,11 +737,13 @@ const getSuplement = async (req, res) => {
             throw new NotFoundError(`Suplement with name ${name} not found`);
         }
 
-        res.status(StatusCodes.OK).json({suplement: {
-            name: suplement.name,
-            status: suplement.status,
-            currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]
-        }});
+        res.status(StatusCodes.OK).json({
+            suplement: {
+                name: suplement.name,
+                status: suplement.status,
+                currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]
+            }
+        });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -777,7 +775,7 @@ const addSuplement = async (req, res) => {
         user.suplements.push({ name, status, history: [{ dose, frequency, frequencyUnit }] });
         await user.save();
 
-        res.status(StatusCodes.CREATED).json({ addedSuplement: user.suplements[user.suplements.length - 1]});
+        res.status(StatusCodes.CREATED).json({ addedSuplement: user.suplements[user.suplements.length - 1] });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -807,7 +805,7 @@ const getSuplementHistory = async (req, res) => {
             throw new NotFoundError(`Suplement with name ${name} not found`);
         }
 
-        res.status(StatusCodes.OK).json({suplement: suplement});
+        res.status(StatusCodes.OK).json({ suplement: suplement });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -819,10 +817,10 @@ const getSuplementHistory = async (req, res) => {
  * @response updatedSuplement
  */
 const updateSuplementDose = async (req, res) => {
-   const { user: userID, name, dose, frequency, frequencyUnit } = req.body;
+    const { user: userID, name, dose, frequency, frequencyUnit } = req.body;
 
     if (!name || !dose || !frequency || !frequencyUnit) {
-         throw new BadRequestError("Please provide name, dose, frequency and frequency unit");
+        throw new BadRequestError("Please provide name, dose, frequency and frequency unit");
     }
 
     try {
@@ -839,11 +837,13 @@ const updateSuplementDose = async (req, res) => {
         suplement.history.push({ dose, frequency, frequencyUnit });
         await user.save();
 
-        res.status(StatusCodes.OK).json({ updatedSuplement: {
+        res.status(StatusCodes.OK).json({
+            updatedSuplement: {
                 name: suplement.name,
                 status: suplement.status,
                 currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]
-        } });
+            }
+        });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -927,10 +927,10 @@ const updateSuplementStatus = async (req, res) => {
  * @query count - number of users to return
  * @response users
  */
-const searchUser = async(req,res) =>{
+const searchUser = async (req, res) => {
     const { searchText, user: userID } = req.body;
     const { count } = req.query;
-    
+
     try {
         const searchingUser = await User.findById(userID);
         if (!searchingUser) {
@@ -940,18 +940,18 @@ const searchUser = async(req,res) =>{
         let users = await User.find(
             {
                 $or: [
-                    {firstName: {$regex: searchText, $options: 'i'}},
-                    {lastName: {$regex: searchText, $options: 'i'}},
-                    {email: {$regex: searchText, $options: 'i'}}
+                    { firstName: { $regex: searchText, $options: 'i' } },
+                    { lastName: { $regex: searchText, $options: 'i' } },
+                    { email: { $regex: searchText, $options: 'i' } }
                 ]
             },
         ).select('_id firstName lastName email').limit(count);
 
         users = users.filter(user => {
-            return user._id.toString() !== req.body.user && !searchingUser.friends.includes(user._id) ;
+            return user._id.toString() !== req.body.user && !searchingUser.friends.includes(user._id);
         })
 
-        res.status(StatusCodes.OK).json({users})
+        res.status(StatusCodes.OK).json({ users })
     } catch (err) {
         throw new BadRequestError(err.message);
     }
@@ -969,9 +969,36 @@ const getLevel = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         const level = user.RP;
         res.status(StatusCodes.OK).json({ level });
+    } catch (err) {
+        throw new BadRequestError(err);
+    }
+}
+
+/** Get user's points history
+ * @url GET /user/points/history
+ * @response pointsHistory - list of points gained each day in given time frame
+ * @param timeFrame - time frame in days of the points history (default 7 days)
+ * @description Returns the history of the user's points
+ */
+const getPointsHistory = async (req, res) => {
+    const { user: userID } = req.body;
+    let { timeFrame } = req.query;
+    if (!timeFrame) {
+        timeFrame = 7;
+    }
+
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            throw new NotFoundError(`User with id ${userID} not found`);
+        }
+
+        const pointsHistory = await userPointsHistory(userID, timeFrame);
+
+        res.status(StatusCodes.OK).json({ pointsHistory });
     } catch (err) {
         throw new BadRequestError(err);
     }
@@ -991,7 +1018,7 @@ const getMeasurementHistory = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         let measurements = user.measurements;
         if (type) {
             measurements = measurements.filter((measurement) => measurement.name === type);
@@ -1017,13 +1044,13 @@ const getMeasurements = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         let measurements = user.measurements;
         if (type) {
             measurements = measurements.filter((measurement) => measurement.name === type);
         }
 
-        measurements = measurements.map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0]}))
+        measurements = measurements.map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0] }))
 
         res.status(StatusCodes.OK).json({ measurements });
     } catch (err) {
@@ -1048,7 +1075,7 @@ const addMeasurement = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         const measurement = user.measurements.find((measurement) => measurement.name === name);
         if (!measurement) {
             user.measurements.push({ name, history: [{ size }] });
@@ -1094,12 +1121,12 @@ const updateMeasurement = async (req, res) => {
         if (!user) {
             throw new NotFoundError(`User with id ${userID} not found`);
         }
-        
+
         const measurement = user.measurements.find((measurement) => measurement.name === name);
         if (!measurement) {
             throw new NotFoundError(`Measurement with name ${name} not found`);
         }
-        
+
         if (newSize) {
             const history = measurement.history.find((history) => history._id.toString() === measurementID);
             if (!history) {
@@ -1159,7 +1186,7 @@ const deleteMeasurement = async (req, res) => {
 
         res.status(StatusCodes.OK).json({ message: "Measurement deleted successfully" });
     } catch (err) {
-        throw new BadRequestError(err); 
+        throw new BadRequestError(err);
     }
 }
 
@@ -1173,8 +1200,8 @@ const getProfile = async (req, res) => {
         }
 
         user.suplements = user.suplements.filter((suplement) => suplement.status === "on");
-        user.suplements = [...user.suplements].map((suplement) => ({ name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0]}));
-        user.measurements = [...user.measurements].map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0].size}));
+        user.suplements = [...user.suplements].map((suplement) => ({ name: suplement.name, status: suplement.status, currentDose: suplement.history.sort((a, b) => b.date - a.date)[0] }));
+        user.measurements = [...user.measurements].map((measurement) => ({ name: measurement.name, size: measurement.history.sort((a, b) => b.date - a.date)[0].size }));
 
         res.status(StatusCodes.OK).json({ profileInfo: user });
     } catch (err) {
@@ -1183,9 +1210,11 @@ const getProfile = async (req, res) => {
 
 }
 
-module.exports = { getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight, 
-    updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName, 
-    getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight, 
-    updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement, 
+module.exports = {
+    getUser, updateUser, getCurrentUser, deleteUser, getNotifications, getCurrentWeight,
+    updateCurrentWeight, getWeightHistory, getFirstName, updateFirstName, getLastName, updateLastName,
+    getEmail, updateEmail, getDateOfBirth, updateDateOfBirth, getHeightHistory, getCurrentHeight,
+    updateCurrentHeight, getGender, updateGender, getAllSuplements, getSuplement, addSuplement,
     getSuplementHistory, updateSuplementDose, updateSuplementName, updateSuplementStatus, searchUser, getLevel,
-    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement, getProfile };
+    getMeasurementHistory, getMeasurements, updateMeasurement, addMeasurement, deleteMeasurement, getProfile, getPointsHistory
+};
