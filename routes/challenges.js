@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { getChallenges, replaceChallenge } = require("../controllers/challenges.js");
+const { getChallenges, replaceChallenge, getSingleChallenge } = require("../controllers/challenges.js");
 
-router.route("/").get(getChallenges).put(replaceChallenge);
+router.route("/").get(getChallenges)
+router.route("/:challengeID").get(getSingleChallenge).put(replaceChallenge);
 
 module.exports = router;

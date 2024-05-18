@@ -2,7 +2,7 @@ const ChallengesList = require("../models/ChallengesList");
 const Challenge = require("../models/Challenge");
 const { InternalServerError } = require("../errors");
 
-/** Function to get a random easy challenge from the database
+/** Function to get a random challenge from the database
  * 
  * @param {String} difficulty - The difficulty level of the challenge, possible values are "easy", "medium" and "hard"
  * @returns {ObjectId} - Returns the id of the challenge created
