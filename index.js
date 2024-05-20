@@ -28,6 +28,7 @@ const templatesRoutes = require("./routes/templates");
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const { requireAuth } = require("./middleware/auth");
+const {tournamentPodiumFinish,winTournament} = require("./middleware/challengeComplete");
 
 // App
 const app = express();
@@ -50,7 +51,7 @@ app.use(cookieParser());
 // Routes
 app.use("/auth", authRoutes);
 app.use("/workouts", requireAuth, workoutsRoutes);
-app.use("/tournaments", requireAuth, tournamentRoutes);
+app.use("/tournaments", requireAuth, winTournament,tournamentPodiumFinish, tournamentRoutes);
 app.use("/user", requireAuth, userRoutes);
 app.use("/friends", requireAuth, friendsRoutes);
 app.use("/challenges", requireAuth, challengesRoutes);
