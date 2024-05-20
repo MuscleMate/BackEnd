@@ -7,7 +7,7 @@ const getMain = async (req, res) => {
     const { user: userID } = req.body;
 
     try {
-        const user = await User.findById(userID).populate("challenges").select(["challenges", "RP", "suplements", "weightHistory"]).lean();
+        const user = await User.findById(userID).populate("challenges").select("-_id challenges RP suplements weightHistory").lean();
 
         if (!user) {
             throw new NotFoundError(`User with ID ${userID} not found`);
