@@ -17,6 +17,8 @@ const calculateRP = async (userID, action) => {
         workout: 50,
     };
 
+    console.log(rpAmountEnum[action])
+
 
     if (!rpAmountEnum[action]) {
         throw new InternalServerError('Invalid action specified in calculateRP function');
