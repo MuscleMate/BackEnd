@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const Workout = require("../models/Workout");
-const { BadRequestError, UnauthorizedError, NotFoundError} = require("../errors");
+const { BadRequestError, UnauthorizedError, NotFoundError } = require("../errors");
 const User = require("../models/User");
 const increaseRP = require("../utils/increaseRP");
 const ExercisesList = require("../models/ExercisesList");
@@ -35,21 +35,21 @@ const createWorkout = async (req, res) => {
         if (!exercise._id) {
           throw new BadRequestError("Please provide exercise id for each exercise");
         }
-        if ((!exercise.sets || !exercise.reps || !exercise.weight) && !exercise.duration) {
-          throw new BadRequestError(" Please provide sets, reps and weight or duration for each exercise");
-        }
+        // if ((!exercise.sets || !exercise.reps || !exercise.weight) && !exercise.duration) {
+        //   throw new BadRequestError(" Please provide sets, reps and weight or duration for each exercise");
+        // }
 
-        if (exercise.duration) {
-          exercise.sets = undefined;
-          exercise.reps = undefined;
-          exercise.weight = undefined;
-        } else {
-          exercise.duration = undefined;
-        }
+        // if (exercise.duration) {
+        //   exercise.sets = undefined;
+        //   exercise.reps = undefined;
+        //   exercise.weight = undefined;
+        // } else {
+        //   exercise.duration = undefined;
+        // }
 
         let exerciseObject = await ExercisesList.findById(exercise._id, "-_id -__v").lean();
         delete exercise._id;
-        const newExercise = await Exercise.create({ ...exerciseObject, ...exercise});
+        const newExercise = await Exercise.create({ ...exerciseObject, ...exercise });
         exercise._id = newExercise._id.toString();
       }
     }
@@ -113,10 +113,10 @@ const getAllWorkouts = async (req, res) => {
   }
 };
 
-const deleteWorkout = async(req,res) => {
+const deleteWorkout = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
-  try{
+  try {
     const user = await User.findById(userID);
     if (!user) {
       return res
@@ -124,24 +124,22 @@ const deleteWorkout = async(req,res) => {
         .json({ message: "User not found" });
     }
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Workout not found" });
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Workout not found" });
     }
-    if (workout.user != userID) 
-    {
+    if (workout.user != userID) {
       throw new NotFoundError('User not authorized to delete this workout');
     }
-    
+
     await user.updateOne(
       { $pull: { workouts: id } }
     );
     await workout.deleteOne();
-    res.status(StatusCodes.OK).json({msg: "Workout deleted"});
+    res.status(StatusCodes.OK).json({ msg: "Workout deleted" });
   }
-  catch(err) {
+  catch (err) {
     res.status(StatusCodes.BAD_REQUEST).json({ err: err.message });
   }
 }
@@ -161,29 +159,29 @@ const getSingleWorkout = async (req, res) => {
       .json({ message: "User not found" });
   }
   const workout = await Workout.findById(id).populate([{
-      path: "exercises",
-    }, {
-      path: "user",
-      select: "_id firstName",
-    }, {
-      path: "company",
-      select: "_id firstName",
-    }, {
-      path: "access",
-      select: "_id firstName",
-    }
+    path: "exercises",
+  }, {
+    path: "user",
+    select: "_id firstName",
+  }, {
+    path: "company",
+    select: "_id firstName",
+  }, {
+    path: "access",
+    select: "_id firstName",
+  }
   ]).select("-__v -updatedAt -createdAt").lean();
 
   if (!workout) {
     throw new NotFoundError('Workout not found');
   }
   if (workout.company.indexOf(userID) === -1 && workout.access.indexOf(userID) === -1 && workout.user._id.toString() !== userID) {
-      throw new UnauthorizedError('User not authorized to get information about this workout');
+    throw new UnauthorizedError('User not authorized to get information about this workout');
   }
 
   workout.date = new Date(workout.startDate).toLocaleDateString();
   workout.time = new Date(workout.startDate).toLocaleTimeString().slice(0, 5);
-  delete workout.startDate;    
+  delete workout.startDate;
 
   try {
     return res.status(StatusCodes.OK).json(workout);
@@ -192,7 +190,7 @@ const getSingleWorkout = async (req, res) => {
   }
 };
 
-const updateWorkout = async(req,res) => {
+const updateWorkout = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
   delete req.body.user;
@@ -209,26 +207,24 @@ const updateWorkout = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user != userID) 
-    {
+    if (workout.user != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
     const updatedWorkout = await Workout.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
 
-    res.status(StatusCodes.OK).json({workout: updatedWorkout});
+    res.status(StatusCodes.OK).json({ workout: updatedWorkout });
   }
   catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const changeFavourite = async(req,res) => {
+const changeFavourite = async (req, res) => {
   const { user: userID, favourite } = req.body;
   const { id } = req.params;
 
@@ -243,25 +239,23 @@ const changeFavourite = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user != userID) 
-    {
+    if (workout.user != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
     await workout.updateOne({ favourite: favourite });
-    res.status(StatusCodes.OK).json({msg: "Favourite status updated"});
+    res.status(StatusCodes.OK).json({ msg: "Favourite status updated" });
 
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const startWorkout = async(req,res) => {
+const startWorkout = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
 
@@ -272,31 +266,29 @@ const startWorkout = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user != userID) 
-    {
+    if (workout.user != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
     if (workout.endDate) {
       throw new BadRequestError("Workout is already finished");
     }
-    
+
     workout.startDate = new Date();
     workout.ongoing = true;
     await workout.save();
 
-    res.status(StatusCodes.OK).json({msg: "Workout started"});
+    res.status(StatusCodes.OK).json({ msg: "Workout started" });
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const endWorkout = async(req,res) => {
+const endWorkout = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
 
@@ -307,13 +299,11 @@ const endWorkout = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user != userID) 
-    {
+    if (workout.user != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
@@ -327,13 +317,13 @@ const endWorkout = async(req,res) => {
     await workout.save();
     await increaseRP(userID, "workout")
 
-    res.status(StatusCodes.OK).json({msg: "Workout ended"});
+    res.status(StatusCodes.OK).json({ msg: "Workout ended" });
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const getCompany = async(req,res) => {
+const getCompany = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
 
@@ -347,13 +337,11 @@ const getCompany = async(req,res) => {
       path: "company",
       select: "_id firstName"
     })
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError(`Workout with id ${id} not found`);
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to get information about this workout');
     }
 
@@ -364,7 +352,7 @@ const getCompany = async(req,res) => {
   }
 }
 
-const addUserToCompany = async(req,res) => {
+const addUserToCompany = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
   const { company } = req.body;
@@ -380,13 +368,11 @@ const addUserToCompany = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
@@ -401,13 +387,13 @@ const addUserToCompany = async(req,res) => {
 
     await workout.updateOne({ $push: { company: userToBeAdded._id } });
     await userToBeAdded.updateOne({ $push: { workouts: workout._id } });
-    res.status(StatusCodes.OK).json({msg: "User added to company"});
+    res.status(StatusCodes.OK).json({ msg: "User added to company" });
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const deleteUserFromCompany = async(req,res) => {
+const deleteUserFromCompany = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
   const { company } = req.body;
@@ -423,13 +409,11 @@ const deleteUserFromCompany = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
@@ -444,13 +428,13 @@ const deleteUserFromCompany = async(req,res) => {
 
     await workout.updateOne({ $pull: { company: userToBeDeleted._id } });
     await userToBeDeleted.updateOne({ $pull: { workouts: workout._id } });
-    res.status(StatusCodes.OK).json({msg: "User deleted from company"});
+    res.status(StatusCodes.OK).json({ msg: "User deleted from company" });
   } catch (err) {
     throw new BadRequestError(err);
   }
-}  
+}
 
-const getAccess = async(req,res) => {
+const getAccess = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
 
@@ -464,13 +448,11 @@ const getAccess = async(req,res) => {
       path: "access",
       select: "_id firstName"
     })
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError(`Workout with id ${id} not found`);
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to get information about this workout');
     }
 
@@ -481,7 +463,7 @@ const getAccess = async(req,res) => {
   }
 }
 
-const addUserToAccess = async(req,res) => {
+const addUserToAccess = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
   const { access } = req.body;
@@ -497,13 +479,11 @@ const addUserToAccess = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError('Workout not found');
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
@@ -518,13 +498,13 @@ const addUserToAccess = async(req,res) => {
 
     await workout.updateOne({ $push: { access: userToBeAdded._id } });
     await userToBeAdded.updateOne({ $push: { workouts: workout._id } });
-    res.status(StatusCodes.OK).json({msg: "User added to company"});
+    res.status(StatusCodes.OK).json({ msg: "User added to company" });
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
-const deleteUserFromAccess = async(req,res) => {
+const deleteUserFromAccess = async (req, res) => {
   const { user: userID } = req.body;
   const { id } = req.params;
   const { access } = req.body;
@@ -540,13 +520,11 @@ const deleteUserFromAccess = async(req,res) => {
     }
 
     const workout = await Workout.findById(id);
-    if(!workout)
-    {
+    if (!workout) {
       throw new NotFoundError(`Workout with id ${id} not found`);
     }
 
-    if (workout.user.toString() != userID) 
-    {
+    if (workout.user.toString() != userID) {
       throw new UnauthorizedError('User not authorized to update this workout');
     }
 
@@ -561,21 +539,21 @@ const deleteUserFromAccess = async(req,res) => {
 
     await workout.updateOne({ $pull: { access: userToBeDeleted._id } });
     await userToBeDeleted.updateOne({ $pull: { workouts: workout._id } });
-    res.status(StatusCodes.OK).json({msg: "User access revoked"});
+    res.status(StatusCodes.OK).json({ msg: "User access revoked" });
   } catch (err) {
     throw new BadRequestError(err);
   }
 }
 
 
-module.exports = { 
-  getAllWorkouts, 
-  createWorkout, 
-  deleteWorkout, 
-  getSingleWorkout, 
-  updateWorkout, 
-  changeFavourite, 
-  startWorkout, 
+module.exports = {
+  getAllWorkouts,
+  createWorkout,
+  deleteWorkout,
+  getSingleWorkout,
+  updateWorkout,
+  changeFavourite,
+  startWorkout,
   endWorkout,
   getCompany,
   addUserToCompany,
