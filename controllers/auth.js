@@ -38,6 +38,7 @@ const register = async (req, res) => {
   if (userExists) {
     throw new BadRequestError(`User with email ${email} already exists`);
   }
+  console.log("dfasf")
 
   // Draw challenges
   const easyChallenge = await drawChallenge("Łatwy")

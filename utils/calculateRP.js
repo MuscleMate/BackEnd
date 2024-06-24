@@ -11,9 +11,9 @@ const calculateRP = async (userID, action) => {
         tournamentWin: 125,
         tournamentPodium: 75,
         tournamentParticipation: 50,
-        challengeEasy: 50,
-        challengeMedium: 75,
-        challengeHard: 100,
+        challengeŁatwy: 50,
+        challengeŚredni: 75,
+        challengeZaawansowany: 100,
         workout: 50,
     };
 
