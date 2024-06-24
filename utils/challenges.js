@@ -8,7 +8,7 @@ const { InternalServerError } = require("../errors");
  * @returns {ObjectId} - Returns the id of the challenge created
  */
 const drawChallege = async (difficulty) => {
-    const difficultyPossibleValues = ["easy", "medium", "hard"];
+    const difficultyPossibleValues = ["Łatwy", "Średni", "Zaaawansowany"];
     if (!difficultyPossibleValues.includes(difficulty)) {
         throw new InternalServerError("Invalid difficulty level");
     }

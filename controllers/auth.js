@@ -4,7 +4,7 @@ const Token = require("../models/Token");
 const { createJWT, attachCookies, isJWTValid } = require("../utils/JWT");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
 const jwt = require("jsonwebtoken");
-const sendEmail= require("../utils/sendEmail");
+const sendEmail = require("../utils/sendEmail");
 const { resetPasswordTemplate } = require("../utils/emailTemaplates");
 const drawChallenge = require("../utils/challenges");
 
@@ -40,9 +40,9 @@ const register = async (req, res) => {
   }
 
   // Draw challenges
-  const easyChallenge = await drawChallenge("easy")
-  const mediumChallenge = await drawChallenge("medium")
-  const hardChallenge = await drawChallenge("hard")
+  const easyChallenge = await drawChallenge("Łatwy")
+  const mediumChallenge = await drawChallenge("Średni")
+  const hardChallenge = await drawChallenge("Zaawansowany")
   req.body.challenges = [easyChallenge, mediumChallenge, hardChallenge];
 
   const user = await User.create(req.body);
@@ -98,7 +98,7 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   const tokenValue = req.cookies.jwt;
 
-  if(!tokenValue){
+  if (!tokenValue) {
     throw new BadRequestError("You are already log out");
   }
 
@@ -137,7 +137,7 @@ const reset_password = async (req, res) => {
   userRet.password = password;
 
   const tokens = await Token.find({ user: user });
-  if(tokens.length != 0){
+  if (tokens.length != 0) {
     await Token.deleteMany({ user: user });
   }
 
@@ -154,19 +154,19 @@ const reset_password = async (req, res) => {
  * @body email
  * @response email sent message
  */
-const forgot_password = async (req,res) => {
+const forgot_password = async (req, res) => {
   const { email } = req.body;
 
-  if(!email){
+  if (!email) {
     throw new BadRequestError("Please provide email");
   }
 
-  const user = await User.findOne({email: email});
-  if(!user){
+  const user = await User.findOne({ email: email });
+  if (!user) {
     throw new BadRequestError("User with provided email does not exists");
   }
 
-  const tokenValue = jwt.sign({ payload: user._id}, process.env.JWT_SECRET, {
+  const tokenValue = jwt.sign({ payload: user._id }, process.env.JWT_SECRET, {
     expiresIn: 3600, // 1 h
   });
   const currentDate = new Date();
@@ -184,18 +184,18 @@ const forgot_password = async (req,res) => {
  * @body new password
  * @response password changed
  */
-const forgot_password_reset = async (req,res) => {
+const forgot_password_reset = async (req, res) => {
   const tokenParam = req.params.token;
   const password = req.body.password;
 
-  if(!tokenParam){
+  if (!tokenParam) {
     throw new BadRequestError("Please provide reset token");
   }
-  if(!password){
+  if (!password) {
     throw new BadRequestError("Please provide password");
   }
 
-  if(!isJWTValid(tokenParam)){
+  if (!isJWTValid(tokenParam)) {
     throw new UnauthenticatedError("Token is invalid");
   }
 
@@ -208,7 +208,7 @@ const forgot_password_reset = async (req,res) => {
     }
   }
 
-  if(!userID){
+  if (!userID) {
     throw new BadRequestError("User does not exists");
   }
 

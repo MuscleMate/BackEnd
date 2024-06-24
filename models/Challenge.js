@@ -32,7 +32,7 @@ const ChallengeSchema = new mongoose.Schema({
     },
     difficulty: {
         type: String,
-        enum: ['easy', 'medium', 'hard'],
+        enum: ['Łatwy', 'Średni', 'Zaawansowany'],
         required: [true, 'Please provide a dificulty']
     },
     status: {
@@ -44,7 +44,7 @@ const ChallengeSchema = new mongoose.Schema({
 
 ChallengeSchema.pre("save", async function (next) {
     this.endDate = new Date(this.startDate.getTime() + this.duration * 24 * 60 * 60 * 1000);
-  
+
     next();
 });
 
