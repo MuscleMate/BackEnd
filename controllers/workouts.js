@@ -87,7 +87,7 @@ const getAllWorkouts = async (req, res) => {
   try {
     const user = await User.findById(userID).populate({
       path: "workouts",
-      select: "title startDate duration exercises favourite"
+      select: "title startDate duration exercises favourite",
     }).lean();
     if (!user) {
       return res
@@ -95,6 +95,8 @@ const getAllWorkouts = async (req, res) => {
         .json({ message: "User not found" });
     }
     let workouts = user.workouts;
+
+    workouts.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
     workouts = workouts.map((workout) => {
       let newWorkout = { ...workout };
