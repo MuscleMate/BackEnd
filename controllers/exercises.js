@@ -6,11 +6,9 @@ const searchExercises = async (req, res) => {
     const { searchText } = req.body;
     let { difficulty, type, limit } = req.query;
 
-    difficulty = difficulty ? difficulty : { $in: ['Beginner', 'Intermediate', 'Advanced', "Expert"] };
-    type = type ? type : { $in: ["Chest", "Back", "Legs", "Shoulders", "Arms", "Calfs", "Core", "Cardio", "Full body", "Other"] };
+    difficulty = difficulty ? difficulty : { $in: ['Łatwy', 'Średni', 'Zaawansowany'] };
+    type = type ? type : { $in: ["Nogi", "Klatka piersiowa", "Plecy", "Ramiona", "Barki", "Core", "Całe ciało"] };
     limit = limit ? limit : 10;
-
-    console.log(type, difficulty)
 
     try {
         const exercises = await ExercisesList.find({
