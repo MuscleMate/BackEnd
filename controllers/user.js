@@ -929,7 +929,11 @@ const updateSuplementStatus = async (req, res) => {
  */
 const searchUser = async (req, res) => {
     const { searchText, user: userID } = req.body;
-    const { count } = req.query;
+    let { count } = req.query;
+
+    if (!count) {
+        count = 20
+    }
 
     try {
         const searchingUser = await User.findById(userID);
@@ -945,13 +949,13 @@ const searchUser = async (req, res) => {
                     { email: { $regex: searchText, $options: 'i' } }
                 ]
             },
-        ).select('_id firstName lastName email').limit(count);
+        ).select('_id firstName lastName email')
 
         users = users.filter(user => {
             return user._id.toString() !== req.body.user && !searchingUser.friends.includes(user._id);
-        })
+        }).slice(0, count);
 
-        res.status(StatusCodes.OK).json({ users })
+        res.status(StatusCodes.OK).json({ friends: users })
     } catch (err) {
         throw new BadRequestError(err.message);
     }
