@@ -16,11 +16,11 @@ const ExerciseSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["Chest", "Back", "Legs", "Shoulders", "Arms", "Calfs", "Core", "Cardio", "Full body", "Other"]
+    enum: ["Nogi", "Klatka piersiowa", "Plecy", "Ramiona", "Barki", "Core", "Całe ciało"]
   },
   difficulty: {
     type: String,
-    enum: ['Beginner', 'Intermediate', 'Advanced', "Expert"],
+    enum: ['Łatwy', 'Średni', 'Zaawansowany'],
   },
   sets: {
     type: Number,
